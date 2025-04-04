@@ -1,0 +1,315 @@
+import 'dart:io';
+import 'package:bills/backend/fileupload.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+
+class Upload extends StatefulWidget {
+  final User currentUser;
+  const Upload({super.key, required this.currentUser});
+
+  @override
+  State<Upload> createState() => _UploadState();
+}
+
+class _UploadState extends State<Upload> {
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _nameController = TextEditingController();
+  TextEditingController _amountController = TextEditingController();
+  String? errorName;
+  String? errorAmount;
+  String? errorDate;
+  String? errorUpload;
+
+  void _errors() {
+    if (_dateController.text.isEmpty) {
+      setState(() {
+        errorDate = "Date Required";
+      });
+    } else {
+      setState(() {
+        errorDate = null;
+      });
+    }
+
+    if (_nameController.text.isEmpty) {
+      setState(() {
+        errorName = "name Required";
+      });
+    } else {
+      setState(() {
+        errorName = null;
+      });
+    }
+
+    if (_amountController.text.isEmpty) {
+      setState(() {
+        errorAmount = "Date Required";
+      });
+    } else {
+      setState(() {
+        errorAmount = null;
+      });
+    }
+
+    if (image == null) {
+      setState(() {
+        errorUpload = "Image Required";
+      });
+    } else {
+      setState(() {
+        errorUpload = null;
+      });
+    }
+  }
+
+  bool check() {
+    _errors();
+    if (errorAmount == null &&
+        errorName == null &&
+        errorDate == null &&
+        errorUpload == null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  String folderID =
+      "https://drive.google.com/drive/folders/1YBjZr-y3AVvHIw-xVKr717ajFYgEDyd2";
+
+  @override
+  void initState() {
+    super.initState();
+    _dateController = TextEditingController();
+    email = widget.currentUser.email;
+    _nameController = TextEditingController();
+    _amountController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _dateController.dispose();
+    _nameController.dispose();
+    _amountController.dispose();
+  }
+
+  Future<void> _imagePicker() async {
+    final uploadedImage = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
+    setState(() {
+      image = File(uploadedImage!.path);
+    });
+  }
+
+  File? image;
+  String? error;
+
+  Future<void> _datepicker() async {
+    DateTime? date = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2026),
+    );
+    if (date != null) {
+      setState(() {
+        _dateController.text = date.toString().split(" ")[0];
+      });
+    }
+  }
+
+  String? email;
+
+  FileUpload upload = FileUpload();
+
+  Future<void> _upload(String date, String name, double amount) async {
+    bool c = check();
+    if (email == null || c == false) {
+      return;
+    } else {
+      String? result = await upload.uploadfile(
+        email!,
+        date,
+        name,
+        amount,
+        image!,
+      );
+      setState(() {
+        error = result;
+      });
+      if (!mounted) return;
+      if (error == null) {
+        Navigator.pop(context);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.grey[900],
+        centerTitle: true,
+        title: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                "Upload Bill",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        elevation: 0,
+        actions: [SizedBox(width: 55)],
+      ),
+      resizeToAvoidBottomInset: false,
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        child: Container(
+          padding: EdgeInsets.only(top: 70, right: 35, left: 35),
+          color: Colors.grey[900],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 20,
+            children: [
+              Container(
+                padding: EdgeInsets.all(10),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    _imagePicker();
+                  },
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: 200,
+                    child: Center(
+                      child:
+                          image != null
+                              ? Image.file(image!)
+                              : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                spacing: 4,
+                                children: [
+                                  Icon(Icons.add, color: Colors.white),
+                                  Text(
+                                    "UPLOAD",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 17,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                    ),
+                  ),
+                ),
+              ),
+              if (errorUpload != null) ...[
+                Text(
+                  errorUpload!,
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                ),
+              ],
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  label: Text("Name"),
+                  errorText: errorName,
+                ),
+                style: TextStyle(color: Colors.white),
+              ),
+              TextField(
+                controller: _amountController,
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+                ],
+                decoration: InputDecoration(
+                  label: Text("Amount"),
+                  prefixIcon: Icon(Icons.currency_rupee),
+                  errorText: errorAmount,
+                ),
+                style: TextStyle(color: Colors.white),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              TextField(
+                controller: _dateController,
+                onTap: () {
+                  _datepicker();
+                },
+                decoration: InputDecoration(
+                  label: Text("Date Issued"),
+                  prefixIcon: Icon(Icons.calendar_today),
+                  errorText: errorDate,
+                ),
+                style: TextStyle(color: Colors.white),
+              ),
+              if (error != null) ...[
+                Text(
+                  error!,
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              Container(padding: EdgeInsets.all(10)),
+              Column(
+                spacing: 20,
+                children: [
+                  Container(
+                    padding: EdgeInsets.only(left: 40, right: 40),
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      color: Colors.black,
+                    ),
+                    child: TextButton(
+                      onPressed: () {
+                        check()
+                            ? _upload(
+                              _dateController.text,
+                              _nameController.text,
+                              double.parse(_amountController.text),
+                            )
+                            : _errors();
+                      },
+                      child: Text(
+                        "UPLOAD",
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

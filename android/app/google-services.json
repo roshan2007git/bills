@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "511527805168",
+    "project_id": "bills-app-7e033",
+    "storage_bucket": "bills-app-7e033.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:511527805168:android:863e50c6da39bfae51a235",
+        "android_client_info": {
+          "package_name": "com.example.bills"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkf5RH9LlrX0cZbiYdXOsN6j_tq46iFaE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
