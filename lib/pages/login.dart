@@ -16,6 +16,8 @@ class _LoginState extends State<Login> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   String? error;
+  String? passwordError;
+  String? usernameError;
   bool showerror = false;
 
   @override
@@ -40,75 +42,95 @@ class _LoginState extends State<Login> {
   }
 
   Future<void> _signIn() async {
-    String username = _usernameController.text;
-    String password = _passwordController.text;
+    String? username = _usernameController.text;
+    String? password = _passwordController.text;
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
-    );
-
-    // Call the AuthService to perform sign-in
-    CustomLogin login = CustomLogin();
-
-    UserCredential? uc;
-
-    try {
-      UserCredential? userCredential = await login
-          .signInWithUsernameAndPassword(username, password);
-      uc = userCredential;
-    } catch (e) {
-      if (mounted) Navigator.pop(context);
+    if (username == "" && password != "") {
       setState(() {
-        error = e.toString();
-        showerror = true;
+        usernameError = "Username Required";
+        passwordError = "";
       });
-    } finally {
-      if (uc != null) {
-        User customUser = uc.user!;
-        bool approved = false;
-        CallUser check = CallUser();
-        try {
-          bool isApproved = await check.approved(customUser);
-          approved = isApproved;
-        } catch (e) {
-          if (mounted) Navigator.pop(context);
-          setState(() {
-            error = e.toString();
-            showerror = true;
-          });
-        } finally {
-          if (mounted) {
-            if (approved) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Directory(currentUser: customUser),
-                ),
-              );
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Approval(customUser: customUser),
-                ),
-              );
-            }
-          } else {
-            if (mounted) Navigator.pop(context);
-            setState(() {
-              error = 'An Error Occured';
-              showerror = true;
-            });
-          }
-        }
-      } else {
+    } else if (password == "" && username != "") {
+      setState(() {
+        passwordError = "Password Required";
+        usernameError = "";
+      });
+    } else if (password == "" && username == "") {
+      setState(() {
+        passwordError = "Password Required";
+        usernameError = "Username Required";
+      });
+    } else {
+      setState(() {
+        usernameError = "";
+        passwordError = "";
+      });
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
+
+      CustomLogin login = CustomLogin();
+
+      UserCredential? uc;
+
+      try {
+        UserCredential? userCredential = await login
+            .signInWithUsernameAndPassword(username, password);
+        uc = userCredential;
+      } catch (e) {
         if (mounted) Navigator.pop(context);
         setState(() {
-          error = 'Sign-in failed. Please check your Email and Password.';
+          error = e.toString();
           showerror = true;
         });
+      } finally {
+        if (uc != null) {
+          User customUser = uc.user!;
+          bool approved = false;
+          CallUser check = CallUser();
+          try {
+            bool isApproved = await check.approved(customUser);
+            approved = isApproved;
+          } catch (e) {
+            if (mounted) Navigator.pop(context);
+            setState(() {
+              error = e.toString();
+              showerror = true;
+            });
+          } finally {
+            if (mounted) {
+              if (approved) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Directory(currentUser: customUser),
+                  ),
+                );
+              } else {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Approval(customUser: customUser),
+                  ),
+                );
+              }
+            } else {
+              if (mounted) Navigator.pop(context);
+              setState(() {
+                error = 'An Error Occured';
+                showerror = true;
+              });
+            }
+          }
+        } else {
+          if (mounted) Navigator.pop(context);
+          setState(() {
+            error = 'Sign-in failed. Please check your Email and Password.';
+            showerror = true;
+          });
+        }
       }
     }
   }
@@ -150,7 +172,10 @@ class _LoginState extends State<Login> {
                   children: [
                     TextField(
                       controller: _usernameController,
-                      decoration: InputDecoration(label: Text("Username")),
+                      decoration: InputDecoration(
+                        label: Text("Username"),
+                        errorText: usernameError,
+                      ),
                       style: TextStyle(color: Colors.white),
                       onChanged: (_) {
                         _hide();
@@ -158,7 +183,10 @@ class _LoginState extends State<Login> {
                     ),
                     TextField(
                       controller: _passwordController,
-                      decoration: InputDecoration(label: Text("Password")),
+                      decoration: InputDecoration(
+                        label: Text("Password"),
+                        errorText: passwordError,
+                      ),
                       style: TextStyle(color: Colors.white),
                       obscureText: true,
                       onChanged: (_) {
