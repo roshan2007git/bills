@@ -80,15 +80,23 @@ class _DirectoryState extends State<Directory> {
 
   String? error;
   Future<void> signOut() async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
     try {
-      await FirebaseAuth.instance.signOut();
-      if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => Login()),
-      ); // This logs the user out
+      await FirebaseAuth.instance.signOut(); // This logs the user out
     } catch (e) {
+      if (mounted) Navigator.pop(context);
       error = e.toString();
+    } finally {
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => Login()),
+        );
+      }
     }
   }
 
