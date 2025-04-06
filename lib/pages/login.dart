@@ -16,12 +16,14 @@ class _LoginState extends State<Login> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   String? error;
+  bool showerror = false;
 
   @override
   void initState() {
     super.initState();
     _usernameController = TextEditingController();
     _passwordController = TextEditingController();
+    showerror = false;
   }
 
   @override
@@ -31,43 +33,83 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
+  void _hide() {
+    setState(() {
+      showerror = false;
+    });
+  }
+
   Future<void> _signIn() async {
     String username = _usernameController.text;
     String password = _passwordController.text;
 
-    // Call the AuthService to perform sign-in
-    CustomLogin login = CustomLogin();
-    UserCredential? userCredential = await login.signInWithUsernameAndPassword(
-      username,
-      password,
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    if (userCredential != null) {
-      User customUser = userCredential.user!;
+    // Call the AuthService to perform sign-in
+    CustomLogin login = CustomLogin();
 
-      CallUser check = CallUser();
-      bool isApproved = await check.approved(customUser);
+    UserCredential? uc;
 
-      if (!mounted) return;
-      if (isApproved) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Directory(currentUser: customUser),
-          ),
-        );
-      } else {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => Approval(customUser: customUser),
-          ),
-        );
-      }
-    } else {
+    try {
+      UserCredential? userCredential = await login
+          .signInWithUsernameAndPassword(username, password);
+      uc = userCredential;
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
       setState(() {
-        error = 'Sign-in failed. Please check your Email and Password.';
+        error = e.toString();
+        showerror = true;
       });
+    } finally {
+      if (uc != null) {
+        User customUser = uc.user!;
+        bool approved = false;
+        CallUser check = CallUser();
+        try {
+          bool isApproved = await check.approved(customUser);
+          approved = isApproved;
+        } catch (e) {
+          if (mounted) Navigator.pop(context);
+          setState(() {
+            error = e.toString();
+            showerror = true;
+          });
+        } finally {
+          if (mounted) {
+            if (approved) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Directory(currentUser: customUser),
+                ),
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => Approval(customUser: customUser),
+                ),
+              );
+            }
+          } else {
+            if (mounted) Navigator.pop(context);
+            setState(() {
+              error = 'An Error Occured';
+              showerror = true;
+            });
+          }
+        }
+      } else {
+        if (mounted) Navigator.pop(context);
+        setState(() {
+          error = 'Sign-in failed. Please check your Email and Password.';
+          showerror = true;
+        });
+      }
     }
   }
 
@@ -88,7 +130,10 @@ class _LoginState extends State<Login> {
       ),
       resizeToAvoidBottomInset: false,
       body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          _hide();
+        },
         child: Container(
           padding: EdgeInsets.only(right: 35, left: 35, top: 120),
           color: Colors.grey[900],
@@ -107,14 +152,20 @@ class _LoginState extends State<Login> {
                       controller: _usernameController,
                       decoration: InputDecoration(label: Text("Username")),
                       style: TextStyle(color: Colors.white),
+                      onChanged: (_) {
+                        _hide();
+                      },
                     ),
                     TextField(
                       controller: _passwordController,
                       decoration: InputDecoration(label: Text("Password")),
                       style: TextStyle(color: Colors.white),
                       obscureText: true,
+                      onChanged: (_) {
+                        _hide();
+                      },
                     ),
-                    if (error != null) ...[
+                    if (error != null && showerror == true) ...[
                       Text(
                         error!,
                         style: TextStyle(color: Colors.red, fontSize: 14),
