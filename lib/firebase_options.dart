@@ -41,48 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyC_LaFnGFByIScaqZFCBgUeQ6f4PLgJrfA',
-    appId: '1:511527805168:web:052fe29ee2e2ff0a51a235',
-    messagingSenderId: '511527805168',
-    projectId: 'bills-app-7e033',
-    authDomain: 'bills-app-7e033.firebaseapp.com',
-    storageBucket: 'bills-app-7e033.firebasestorage.app',
-    measurementId: 'G-NFZFTGBT99',
+    apiKey: 'AIzaSyCiGpSWIznhjuH2aJ7f90lrGbtCojveNKA',
+    appId: '1:315528552147:web:341cba3c00888ae7b0be26',
+    messagingSenderId: '315528552147',
+    projectId: 'bills-app-2a7e8',
+    authDomain: 'bills-app-2a7e8.firebaseapp.com',
+    storageBucket: 'bills-app-2a7e8.firebasestorage.app',
+    measurementId: 'G-3BQESYYFKK',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBkf5RH9LlrX0cZbiYdXOsN6j_tq46iFaE',
-    appId: '1:511527805168:android:863e50c6da39bfae51a235',
-    messagingSenderId: '511527805168',
-    projectId: 'bills-app-7e033',
-    storageBucket: 'bills-app-7e033.firebasestorage.app',
+    apiKey: 'AIzaSyACb-QotV3nay_EtVbmxWRtktyBs5vjwOM',
+    appId: '1:315528552147:android:2104e2671508534bb0be26',
+    messagingSenderId: '315528552147',
+    projectId: 'bills-app-2a7e8',
+    storageBucket: 'bills-app-2a7e8.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyAJk-s3jxhom7ZmfOyvxR50MuZTUovbaqk',
-    appId: '1:511527805168:ios:f18172449d5923ab51a235',
-    messagingSenderId: '511527805168',
-    projectId: 'bills-app-7e033',
-    storageBucket: 'bills-app-7e033.firebasestorage.app',
+    apiKey: 'AIzaSyCAn0gpNIhD5uKmqydzRVEslMmSepH8voc',
+    appId: '1:315528552147:ios:23bcc6cf999bdb48b0be26',
+    messagingSenderId: '315528552147',
+    projectId: 'bills-app-2a7e8',
+    storageBucket: 'bills-app-2a7e8.firebasestorage.app',
     iosBundleId: 'com.example.bills',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyAJk-s3jxhom7ZmfOyvxR50MuZTUovbaqk',
-    appId: '1:511527805168:ios:f18172449d5923ab51a235',
-    messagingSenderId: '511527805168',
-    projectId: 'bills-app-7e033',
-    storageBucket: 'bills-app-7e033.firebasestorage.app',
+    apiKey: 'AIzaSyCAn0gpNIhD5uKmqydzRVEslMmSepH8voc',
+    appId: '1:315528552147:ios:23bcc6cf999bdb48b0be26',
+    messagingSenderId: '315528552147',
+    projectId: 'bills-app-2a7e8',
+    storageBucket: 'bills-app-2a7e8.firebasestorage.app',
     iosBundleId: 'com.example.bills',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyC_LaFnGFByIScaqZFCBgUeQ6f4PLgJrfA',
-    appId: '1:511527805168:web:745a8641d009773c51a235',
-    messagingSenderId: '511527805168',
-    projectId: 'bills-app-7e033',
-    authDomain: 'bills-app-7e033.firebaseapp.com',
-    storageBucket: 'bills-app-7e033.firebasestorage.app',
-    measurementId: 'G-5Q8ZKP8WF1',
+    apiKey: 'AIzaSyCiGpSWIznhjuH2aJ7f90lrGbtCojveNKA',
+    appId: '1:315528552147:web:97fd0cf73f8c9486b0be26',
+    messagingSenderId: '315528552147',
+    projectId: 'bills-app-2a7e8',
+    authDomain: 'bills-app-2a7e8.firebaseapp.com',
+    storageBucket: 'bills-app-2a7e8.firebasestorage.app',
+    measurementId: 'G-67963QR827',
   );
+
 }
