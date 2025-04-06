@@ -6,7 +6,7 @@ class DriveApi {
   Future<drive.DriveApi?> getDriveApi() async {
     try {
       final serviceAccount = await rootBundle.loadString(
-        "assets/bills-app-7e033-b14fd82cc3ac.json",
+        "assets/bills-456018-f23ceb558311.json",
       );
 
       final credentials = ServiceAccountCredentials.fromJson(serviceAccount);

@@ -9,8 +9,8 @@ class EmailService {
   }
 
   static Future<dynamic> sendEmail(String email) async {
-    String username = "roshan.pramod.2007@gmail.com";
-    String password = "mlnw sldn rddr gkof";
+    String username = "transcendence@sjbhs.edu.in";
+    String password = "uzrs romk brhx lwcf";
 
     final smtpServer = gmail(username, password);
     int otp = generateRandomOTP();

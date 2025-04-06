@@ -12,7 +12,7 @@ class CreateFolder {
       }
 
       // The ID of the shared folder where all user folders should be created
-      String sharedFolderId = "1YBjZr-y3AVvHIw-xVKr717ajFYgEDyd2";
+      String sharedFolderId = "1G0wqPlFg_GfTC4OqzWC4abF-MWFOQAxL";
 
       // Check if the folder already exists
       var query =

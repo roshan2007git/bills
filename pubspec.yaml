@@ -70,7 +70,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/bills-app-7e033-b14fd82cc3ac.json
+    - assets/bills-456018-f23ceb558311.json
     - assets/logo.png
     - assets/logo-info.png
   # To add assets to your application, add an assets section, like this:

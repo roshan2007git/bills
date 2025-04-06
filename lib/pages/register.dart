@@ -609,7 +609,7 @@ class _VerifyState extends State<Verify> {
                         borderRadius: BorderRadius.circular(100),
                       ),
                       child: Text(
-                        "Varify",
+                        "Verify",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 18,
