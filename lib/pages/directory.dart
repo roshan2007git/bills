@@ -1,8 +1,10 @@
 import 'package:bills/backend/usercall.dart';
+import 'package:bills/pages/info.dart';
 import 'package:bills/pages/login.dart';
 import 'package:bills/pages/upload.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:bills/backend/refresh.dart';
 
 const List names = ['John', 'Jacob', 'Aron', 'Amy', 'Brad', 'Ben'];
 
@@ -83,9 +85,7 @@ class _DirectoryState extends State<Directory> {
       if (!mounted) return;
       Navigator.push(
         context,
-        MaterialPageRoute(
-          builder: (context) => Upload(currentUser: widget.currentUser),
-        ),
+        MaterialPageRoute(builder: (context) => Login()),
       ); // This logs the user out
     } catch (e) {
       error = e.toString();
@@ -108,31 +108,48 @@ class _DirectoryState extends State<Directory> {
         height: 120,
         padding: EdgeInsets.only(bottom: 27),
         child: Container(
-          padding: EdgeInsets.only(left: 20, right: 20),
+          padding: EdgeInsets.only(left: 10, right: 20),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(Icons.info, color: Colors.white54),
-              Container(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: 5,
-                  bottom: 5,
-                ),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(100),
-                  color: Colors.white,
-                ),
-                child: Text(
-                  "Total Amount: ₹$amount",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Info()),
+                      );
+                    },
+                    icon: Icon(
+                      Icons.info_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
+
+                  Container(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: 5,
+                      bottom: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(100),
+                      color: Colors.white,
+                    ),
+                    child: Text(
+                      "Total Amount: ₹$amount",
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
               ),
               Container(
                 decoration: BoxDecoration(
@@ -143,7 +160,14 @@ class _DirectoryState extends State<Directory> {
                 width: 60,
                 child: IconButton(
                   onPressed: () {
-                    signOut();
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                Upload(currentUser: widget.currentUser),
+                      ),
+                    );
                   },
                   icon: Icon(Icons.add, size: 40),
                   color: Colors.black,
@@ -171,10 +195,7 @@ class _DirectoryState extends State<Directory> {
             color: Colors.transparent,
             child: IconButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => Login()),
-                );
+                signOut();
               },
               icon: Icon(Icons.logout, size: 25),
               color: Colors.white,
@@ -182,62 +203,69 @@ class _DirectoryState extends State<Directory> {
           ),
         ],
       ),
-      body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
-        child: Container(
-          color: Colors.grey[900],
-          width: MediaQuery.of(context).size.width,
-          padding: EdgeInsets.only(top: 40, bottom: 40, right: 25, left: 25),
-          child: Column(
-            spacing: 14,
-            children: [
-              Text(
-                "Files Uploaded",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+      body: Refresh(
+        child: GestureDetector(
+          onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+          child: RefreshIndicator(
+            onRefresh: _refresh,
+            child: Container(
+              color: Colors.grey[900],
+              width: MediaQuery.of(context).size.width,
+              padding: EdgeInsets.only(
+                top: 40,
+                bottom: 40,
+                right: 25,
+                left: 25,
               ),
-              SizedBox(height: 5),
-              Expanded(
-                child: RefreshIndicator(
-                  onRefresh: _refresh,
-                  child: ListView.builder(
-                    itemCount: bills?.isNotEmpty ?? false ? bills!.length : 1,
-                    itemBuilder:
-                        (context, index) => ListTile(
-                          visualDensity: VisualDensity(vertical: -4),
-                          contentPadding: EdgeInsets.zero,
-                          minVerticalPadding: 0,
-                          dense: true,
-                          title:
-                              bills?.isNotEmpty ?? false
-                                  ? Text(
-                                    "— ${bills![index]['billname']}",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                  )
-                                  : Container(
-                                    alignment: Alignment.center,
-                                    padding: EdgeInsets.only(top: 35),
-                                    child: Text(
-                                      "No bills Uploaded",
+              child: Column(
+                spacing: 14,
+                children: [
+                  Text(
+                    "Files Uploaded",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: bills?.isNotEmpty ?? false ? bills!.length : 1,
+                      itemBuilder:
+                          (context, index) => ListTile(
+                            visualDensity: VisualDensity(vertical: -4),
+                            contentPadding: EdgeInsets.zero,
+                            minVerticalPadding: 0,
+                            dense: true,
+                            title:
+                                bills?.isNotEmpty ?? false
+                                    ? Text(
+                                      "— ${bills![index]['billname']}",
                                       style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 15,
-                                        fontWeight: FontWeight.bold,
                                       ),
-                                      textAlign: TextAlign.center,
+                                    )
+                                    : Container(
+                                      alignment: Alignment.center,
+                                      padding: EdgeInsets.only(top: 35),
+                                      child: Text(
+                                        "No bills Uploaded",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
-                                  ),
-                        ),
+                          ),
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

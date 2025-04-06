@@ -74,6 +74,7 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.grey[900],
@@ -89,83 +90,98 @@ class _LoginState extends State<Login> {
       body: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         child: Container(
-          padding: EdgeInsets.only(right: 35, left: 35, bottom: 150),
+          padding: EdgeInsets.only(right: 35, left: 35, top: 120),
           color: Colors.grey[900],
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            spacing: 20,
-            children: [
-              TextField(
-                controller: _usernameController,
-                decoration: InputDecoration(label: Text("Username")),
-                style: TextStyle(color: Colors.white),
-              ),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(label: Text("Password")),
-                style: TextStyle(color: Colors.white),
-                obscureText: true,
-              ),
-              if (error != null) ...[
-                Text(
-                  error!,
-                  style: TextStyle(color: Colors.red, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              Container(padding: EdgeInsets.all(10)),
-              Column(
-                spacing: 20,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ListView(
+              children: [
+                SizedBox(height: 80),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 20,
+                  children: [
+                    TextField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(label: Text("Username")),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(label: Text("Password")),
+                      style: TextStyle(color: Colors.white),
+                      obscureText: true,
+                    ),
+                    if (error != null) ...[
                       Text(
-                        "If you don't have an account, ",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Register()),
-                          );
-                        },
-                        child: Text(
-                          "register",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        error!,
+                        style: TextStyle(color: Colors.red, fontSize: 14),
+                        textAlign: TextAlign.center,
                       ),
                     ],
-                  ),
-                  Container(
-                    padding: EdgeInsets.only(left: 40, right: 40),
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      color: Colors.black,
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        _signIn();
-                      },
-                      child: Text(
-                        "LOGIN",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    Container(padding: EdgeInsets.all(10)),
+                    Column(
+                      spacing: 20,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "If you don't have an account, ",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Register(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "register",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        Container(
+                          padding: EdgeInsets.only(left: 40, right: 40),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: Colors.black,
+                          ),
+                          child: TextButton(
+                            onPressed: () {
+                              _signIn();
+                            },
+                            child: Text(
+                              "LOGIN",
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),

@@ -45,6 +45,7 @@ dependencies:
   googleapis_auth: ^2.0.0
   mime: ^2.0.0
   path: ^1.9.1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_launcher_icons: "^0.14.3"
@@ -71,6 +72,7 @@ flutter:
   assets:
     - assets/bills-app-7e033-b14fd82cc3ac.json
     - assets/logo.png
+    - assets/logo-info.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

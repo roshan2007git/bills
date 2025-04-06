@@ -200,106 +200,120 @@ class _RegisterState extends State<Register> {
         child: Container(
           padding: EdgeInsets.only(top: 120, right: 35, left: 35),
           color: Colors.grey[900],
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 20,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(label: Text("Name")),
-                style: TextStyle(color: Colors.white),
-              ),
-              TextField(
-                controller: _usernameController,
-                decoration: InputDecoration(
-                  errorText: errorUsername,
-                  label: Text("Username"),
-                ),
-                style: TextStyle(color: Colors.white),
-              ),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  errorText: errorEmail,
-                  label: Text("Email"),
-                ),
-                style: TextStyle(color: Colors.white),
-              ),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(label: Text("Password")),
-                style: TextStyle(color: Colors.white),
-                obscureText: true,
-              ),
-              TextField(
-                controller: _cPasswordController,
-                decoration: InputDecoration(
-                  errorText: errorPassword,
-                  label: Text("Confirm Password"),
-                ),
-                style: TextStyle(color: Colors.white),
-                obscureText: true,
-              ),
-              if (error != null) ...[
-                Text(
-                  error!,
-                  style: TextStyle(color: Colors.red, fontSize: 14),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-              Container(padding: EdgeInsets.all(10)),
-              Column(
-                spacing: 20,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "If you already have an account, ",
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ListView(
+              children: [
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: 20,
+                  children: [
+                    TextField(
+                      controller: _nameController,
+                      decoration: InputDecoration(label: Text("Name")),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        errorText: errorUsername,
+                        label: Text("Username"),
                       ),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => Login()),
-                          );
-                        },
-                        child: Text(
-                          "login",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        errorText: errorEmail,
+                        label: Text("Email"),
+                      ),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(label: Text("Password")),
+                      style: TextStyle(color: Colors.white),
+                      obscureText: true,
+                    ),
+                    TextField(
+                      controller: _cPasswordController,
+                      decoration: InputDecoration(
+                        errorText: errorPassword,
+                        label: Text("Confirm Password"),
+                      ),
+                      style: TextStyle(color: Colors.white),
+                      obscureText: true,
+                    ),
+                    if (error != null) ...[
+                      Text(
+                        error!,
+                        style: TextStyle(color: Colors.red, fontSize: 14),
+                        textAlign: TextAlign.center,
                       ),
                     ],
-                  ),
-                  Container(
-                    padding: EdgeInsets.only(left: 40, right: 40),
-                    width: MediaQuery.of(context).size.width,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(100),
-                      color: Colors.black,
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        _handleOTP(context);
-                      },
-                      child: Text(
-                        "REGISTER",
-                        style: TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                    Container(padding: EdgeInsets.all(10)),
+                    Column(
+                      spacing: 20,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              "If you already have an account, ",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Login(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "login",
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
+                        Container(
+                          padding: EdgeInsets.only(left: 40, right: 40),
+                          width: MediaQuery.of(context).size.width,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(100),
+                            color: Colors.black,
+                          ),
+                          child: TextButton(
+                            onPressed: () {
+                              _handleOTP(context);
+                            },
+                            child: Text(
+                              "REGISTER",
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
