@@ -119,7 +119,7 @@ class _LoginState extends State<Login> {
             } else {
               if (mounted) Navigator.pop(context);
               setState(() {
-                error = 'An Error Occured';
+                error = 'An Error occurred';
                 showerror = true;
               });
             }
@@ -277,19 +277,48 @@ class Approval extends StatefulWidget {
 }
 
 class _ApprovalState extends State<Approval> {
+  String? error;
+  bool showerror = false;
+
+  void check() => setState(() {
+    showerror = false;
+  });
+
   void retry() async {
+    setState(() {
+      showerror = false;
+    });
     CallUser check = CallUser();
 
-    bool isApproved = await check.approved(widget.customUser);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
 
-    if (isApproved) {
-      if (!mounted) return;
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Directory(currentUser: widget.customUser),
-        ),
-      );
+    try {
+      bool isApproved = await check.approved(widget.customUser);
+      if (isApproved) {
+        if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Directory(currentUser: widget.customUser),
+          ),
+        );
+      } else {
+        if (mounted) Navigator.pop(context);
+        setState(() {
+          error = "Still Waiting for Approval";
+          showerror = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
+      setState(() {
+        error = e.toString();
+        showerror = true;
+      });
     }
   }
 
@@ -309,9 +338,12 @@ class _ApprovalState extends State<Approval> {
       ),
       resizeToAvoidBottomInset: false,
       body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        onTap: () {
+          check();
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
         child: Container(
-          padding: EdgeInsets.only(left: 20, right: 20),
+          padding: EdgeInsets.only(left: 20, right: 20, bottom: 70),
           color: Colors.grey[900],
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -367,6 +399,13 @@ class _ApprovalState extends State<Approval> {
                   ),
                 ),
               ),
+              if (error != null && showerror == true) ...[
+                Text(
+                  error!,
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ],
           ),
         ),

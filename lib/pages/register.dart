@@ -1,9 +1,10 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:bills/backend/email.dart';
 import 'package:bills/backend/foldercreate.dart';
 import 'package:bills/pages/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 String? _otp;
@@ -26,6 +27,7 @@ class _RegisterState extends State<Register> {
   String? success;
   String? error;
   String? errorUsername;
+  String? errorCPassword;
 
   @override
   void initState() {
@@ -92,12 +94,15 @@ class _RegisterState extends State<Register> {
     _validatePassword(password1, password2);
     await _checkDupe();
 
-    if (errorEmail == null && errorPassword == null && errorUsername == null) {
+    if (errorEmail == null &&
+        errorPassword == null &&
+        errorUsername == null &&
+        errorCPassword == null) {
       try {
         dynamic result = await EmailService.sendEmail(email);
         if (result is int) {
           _otp = result.toString();
-          return "User Successfully Created";
+          return "Email Successfully Sent";
         } else {
           return result;
         }
@@ -127,55 +132,87 @@ class _RegisterState extends State<Register> {
 
   void _validatePassword(String p1, String p2) {
     setState(() {
+      final hasUppercase = p1.contains(RegExp(r'[A-Z]'));
+      final hasNumber = p1.contains(RegExp(r'[0-9]'));
+
       if (p1.isEmpty || p2.isEmpty) {
         errorPassword = "Password cannot be empty";
-      } else if (p1.length < 6) {
-        errorPassword = "Password must be at least 6 characters";
+        errorCPassword = "Please confirm your password";
+      } else if (p1.length < 8) {
+        errorPassword = "Password must be at least 8 characters";
+      } else if (!hasUppercase) {
+        errorPassword = "Password must contain at least one uppercase letter";
+      } else if (!hasNumber) {
+        errorPassword = "Password must contain at least one number";
       } else if (p1 != p2) {
-        errorPassword = "The passwords don't match";
+        errorCPassword = "The passwords don't match";
       } else {
         errorPassword = null;
       }
     });
   }
 
-  void _handleOTP(BuildContext context) async {
-    String? result = await register(
-      _emailController.text,
-      _passwordController.text,
-      _cPasswordController.text,
+  Future<void> _handleOTP(BuildContext context) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
     );
 
-    if (result == "User Successfully Created") {
-      // Navigate only when registration is successful
-      if (context.mounted) {
-        final returnedData = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => Verify(
-                  email: _emailController.text,
-                  password: _passwordController.text,
-                  username: _usernameController.text,
-                  name: _nameController.text,
-                ),
-          ), // Change to your page
-        );
+    try {
+      String? result = await register(
+        _emailController.text,
+        _passwordController.text,
+        _cPasswordController.text,
+      );
 
-        if (returnedData != null) {
-          _nameController.text = returnedData['name'] ?? '';
-          _usernameController.text = returnedData['username'] ?? '';
-          _emailController.text = returnedData['email'] ?? '';
-          _passwordController.text = "";
-          _cPasswordController.text = "";
+      if (result == "Email Successfully Sent") {
+        // Navigate only when registration is successful
+        if (context.mounted) {
+          final returnedData = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder:
+                  (context) => Verify(
+                    email: _emailController.text,
+                    password: _passwordController.text,
+                    username: _usernameController.text,
+                    name: _nameController.text,
+                  ),
+            ), // Change to your page
+          );
+
+          if (returnedData != null) {
+            _nameController.text = returnedData['name'] ?? '';
+            _usernameController.text = returnedData['username'] ?? '';
+            _emailController.text = returnedData['email'] ?? '';
+            _passwordController.text = "";
+            _cPasswordController.text = "";
+            if (mounted) Navigator.pop(context);
+          } else {
+            if (mounted) Navigator.pop(context);
+            setState(() {
+              error = "An Error occurred, could't retrieve data";
+            });
+          }
+        } else {
+          if (mounted) Navigator.pop(context);
+          setState(() {
+            error = "An ERROR has occurred, Please try again later";
+          });
         }
+      } else if (result != null) {
+        if (mounted) Navigator.pop(context);
+        setState(() {
+          error = result;
+        });
       } else {
-        error = "An ERROR has occured, Please try again later";
+        if (mounted) Navigator.pop(context);
       }
-    } else if (result != null) {
-      // Show error message
+    } catch (e) {
+      if (mounted) Navigator.pop(context);
       setState(() {
-        error = result;
+        error = e.toString();
       });
     }
   }
@@ -233,14 +270,17 @@ class _RegisterState extends State<Register> {
                     ),
                     TextField(
                       controller: _passwordController,
-                      decoration: InputDecoration(label: Text("Password")),
+                      decoration: InputDecoration(
+                        label: Text("Password"),
+                        errorText: errorPassword,
+                      ),
                       style: TextStyle(color: Colors.white),
                       obscureText: true,
                     ),
                     TextField(
                       controller: _cPasswordController,
                       decoration: InputDecoration(
-                        errorText: errorPassword,
+                        errorText: errorCPassword,
                         label: Text("Confirm Password"),
                       ),
                       style: TextStyle(color: Colors.white),
@@ -345,6 +385,7 @@ class _VerifyState extends State<Verify> {
   );
   List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
   String? error;
+  bool errorotp = false;
 
   @override
   void initState() {
@@ -378,9 +419,18 @@ class _VerifyState extends State<Verify> {
     return otpIn;
   }
 
+  void errorcheck() {
+    errorotp = false;
+  }
+
   void handleVerification() async {
     CreateFolder folder = CreateFolder();
     if (_otp == getotp()) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator()),
+      );
       try {
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(
@@ -390,38 +440,47 @@ class _VerifyState extends State<Verify> {
         String uid = userCredential.user!.uid;
         String? folderid = await folder.getorcreateUserFolder(widget.username);
         if (folderid == null) {
+          if (mounted) Navigator.pop(context);
           setState(() {
-            error = "An Error has occured. Please try a different username";
+            error = "An Error has occurred. Please try a different username";
           });
           return;
         }
-        await FirebaseFirestore.instance.collection('users').doc(uid).set({
-          'uid': uid,
-          'email': widget.email.toLowerCase(),
-          'username': widget.username,
-          'name': widget.name,
-          'isApproved': false,
-          'createdAt': FieldValue.serverTimestamp(),
-          'bills': [],
-          'folderid': folderid,
-        });
-
+        try {
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'uid': uid,
+            'email': widget.email.toLowerCase(),
+            'username': widget.username,
+            'name': widget.name,
+            'isApproved': false,
+            'createdAt': FieldValue.serverTimestamp(),
+            'bills': [],
+            'folderid': folderid,
+          });
+        } catch (e) {
+          if (mounted) Navigator.pop(context);
+          setState(() {
+            error = e.toString();
+          });
+        } finally {
+          _otp = null;
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => Login()),
+          );
+        }
         if (!mounted) return; // Check after async operations
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => Login()),
-        );
-
-        _otp = null;
       } catch (e) {
+        if (mounted) Navigator.pop(context);
         setState(() {
           error = e.toString();
+          errorotp = true;
         });
       }
     } else {
       setState(() {
         error = "Invalid OTP";
+        errorotp = true;
       });
     }
   }
@@ -454,7 +513,10 @@ class _VerifyState extends State<Verify> {
       ),
       resizeToAvoidBottomInset: false,
       body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          errorcheck();
+        },
         child: Container(
           padding: EdgeInsets.only(right: 35, left: 35, bottom: 150),
           color: Colors.grey[900],
@@ -485,6 +547,9 @@ class _VerifyState extends State<Verify> {
                         decoration: InputDecoration(counterText: ""),
                         style: TextStyle(color: Colors.white),
                         onChanged: (value) {
+                          setState(() {
+                            errorotp = false;
+                          });
                           if (value.isNotEmpty) {
                             // Move to the next field if there's input
                             _moveToNextField(index);
@@ -498,7 +563,7 @@ class _VerifyState extends State<Verify> {
                   }),
                 ),
               ),
-              if (error != null) ...[
+              if (error != null && errorotp == true) ...[
                 Text(
                   error!,
                   style: TextStyle(color: Colors.red, fontSize: 14),
@@ -527,23 +592,30 @@ class _VerifyState extends State<Verify> {
                       ),
                     ],
                   ),
-                  Container(
-                    height: 40,
-                    width: 120,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      color: Colors.cyanAccent,
-                    ),
-                    child: TextButton(
-                      onPressed: () {
-                        handleVerification();
-                      },
+                  TextButton(
+                    onPressed: () {
+                      handleVerification();
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        left: 40,
+                        right: 40,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
                       child: Text(
-                        "Verify",
+                        "Varify",
                         style: TextStyle(
-                          fontSize: 15,
+                          color: Colors.white,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
