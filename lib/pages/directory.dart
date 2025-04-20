@@ -2,6 +2,7 @@ import 'package:bills/backend/usercall.dart';
 import 'package:bills/pages/info.dart';
 import 'package:bills/pages/login.dart';
 import 'package:bills/pages/upload.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bills/backend/refresh.dart';
@@ -28,6 +29,38 @@ class _DirectoryState extends State<Directory> {
       setState(() {
         name = fetchedName; // Update the state with the fetched name
       });
+    }
+  }
+
+  Future<void> _checkApprovalStatus() async {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+
+      final data = doc.data();
+      final isApproved = data?['isApproved'] ?? false;
+
+      if (!mounted) return;
+      if (!isApproved) {
+        // ✅ Navigate to main app/home screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => Approval(customUser: widget.currentUser),
+          ),
+        );
+      }
+    } else {
+      // User is not logged in → maybe redirect to login
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Login()),
+      );
     }
   }
 
@@ -76,6 +109,7 @@ class _DirectoryState extends State<Directory> {
     _fetchName();
     _fetchbills();
     _fetchamount();
+    _checkApprovalStatus();
   }
 
   String? error;
@@ -126,7 +160,11 @@ class _DirectoryState extends State<Directory> {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Info()),
+                        MaterialPageRoute(
+                          builder:
+                              (context) =>
+                                  Info(currentUser: widget.currentUser),
+                        ),
                       );
                     },
                     icon: Icon(

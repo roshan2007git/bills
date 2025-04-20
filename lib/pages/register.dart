@@ -456,6 +456,7 @@ class _VerifyState extends State<Verify> {
             'createdAt': FieldValue.serverTimestamp(),
             'bills': [],
             'folderid': folderid,
+            'isAdmin': false,
           });
         } catch (e) {
           if (mounted) Navigator.pop(context);

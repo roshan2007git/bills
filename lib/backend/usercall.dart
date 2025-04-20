@@ -21,6 +21,25 @@ class CallUser {
     }
   }
 
+  Future<bool> admin(User currentUser) async {
+    try {
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
+      if (userDoc.exists && userDoc.data() != null) {
+        var userData = userDoc.data() as Map<String, dynamic>;
+        bool admin = userData['isAdmin'];
+        return admin;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<String> name(User currentUser) async {
     try {
       DocumentSnapshot userDoc =

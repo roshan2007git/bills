@@ -1,8 +1,45 @@
 import 'package:bills/backend/refresh.dart';
+import 'package:bills/backend/usercall.dart';
+import 'package:bills/pages/admin.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class Info extends StatelessWidget {
-  const Info({super.key});
+class Info extends StatefulWidget {
+  final User currentUser;
+  const Info({super.key, required this.currentUser});
+
+  @override
+  State<Info> createState() => _InfoState();
+}
+
+class _InfoState extends State<Info> {
+  CallUser check = CallUser();
+  bool admin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _authcheck();
+  }
+
+  Future<void> _authcheck() async {
+    try {
+      // Fetch the bills
+      bool isAdmin = await check.admin(widget.currentUser);
+      if (mounted) {
+        setState(() {
+          admin = isAdmin; // Update the state with the fetched bills
+        });
+      }
+    } catch (e) {
+      // You can also set bills to an empty list in case of error to prevent null
+      if (mounted) {
+        setState(() {
+          admin = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,6 +132,43 @@ class Info extends StatelessWidget {
                   ],
                 ),
               ),
+              SizedBox(height: 40),
+              if (admin) ...[
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                AdminPanel(currentUser: widget.currentUser),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    width: MediaQuery.of(context).size.width,
+                    padding: EdgeInsets.only(
+                      top: 10,
+                      bottom: 10,
+                      left: 40,
+                      right: 40,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Text(
+                      "Admin Panel",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
