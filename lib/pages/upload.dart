@@ -33,6 +33,7 @@ class _UploadState extends State<Upload> {
     'Ceremonies',
     'Registrations',
     'Security',
+    'Marketing',
   ];
 
   void _errors() {
