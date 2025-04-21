@@ -11,7 +11,7 @@ class DriveApi {
 
       final credentials = ServiceAccountCredentials.fromJson(serviceAccount);
       final client = await clientViaServiceAccount(credentials, [
-        drive.DriveApi.driveFileScope,
+        drive.DriveApi.driveScope,
       ]);
 
       return drive.DriveApi(client);

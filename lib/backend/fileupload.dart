@@ -16,6 +16,7 @@ class FileUpload {
     String name,
     double amount,
     File image,
+    String category,
   ) async {
     try {
       final driveApi = await api.getDriveApi();
@@ -33,7 +34,12 @@ class FileUpload {
         String docId = querySnapshot.docs.first.id;
         Map<String, dynamic> userData =
             querySnapshot.docs.first.data() as Map<String, dynamic>;
-        List parts = [name.replaceAll(" ", "_"), date, amount.toString()];
+        List parts = [
+          name.replaceAll(" ", "_"),
+          date,
+          amount.toString(),
+          category.substring(0, 3),
+        ];
         String billname = parts.join("_");
         String ext = getFileExtension(image);
         String? folderId = userData['folderid'];
@@ -58,7 +64,12 @@ class FileUpload {
 
         FirebaseFirestore.instance.collection('users').doc(docId).update({
           'bills': FieldValue.arrayUnion([
-            {"billname": billname, 'amount': amount, 'issuedOn': date},
+            {
+              "billname": billname,
+              'amount': amount,
+              'issuedOn': date,
+              'category': category,
+            },
           ]),
         });
         return null;

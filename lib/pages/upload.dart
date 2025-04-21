@@ -22,6 +22,18 @@ class _UploadState extends State<Upload> {
   String? errorAmount;
   String? errorDate;
   String? errorUpload;
+  String? category;
+
+  List<String> items = [
+    'Logistics',
+    'Hospitality',
+    'Tech and Media',
+    'Decor',
+    'Events',
+    'Ceremonies',
+    'Registrations',
+    'Security',
+  ];
 
   void _errors() {
     if (_dateController.text.isEmpty) {
@@ -152,7 +164,7 @@ class _UploadState extends State<Upload> {
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
       try {
-        await upload.uploadfile(email!, date, name, amount, image!);
+        await upload.uploadfile(email!, date, name, amount, image!, category!);
       } catch (e) {
         setState(() {
           error = e.toString();
@@ -213,7 +225,7 @@ class _UploadState extends State<Upload> {
           child: GestureDetector(
             onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
             child: Container(
-              padding: EdgeInsets.only(top: 50, right: 35, left: 35),
+              padding: EdgeInsets.only(top: 40, right: 35, left: 35),
               color: Colors.grey[900],
               child: Padding(
                 padding: EdgeInsets.only(
@@ -312,6 +324,37 @@ class _UploadState extends State<Upload> {
                           ),
                           style: TextStyle(color: Colors.white),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            child: DropdownButton<String>(
+                              value: category,
+                              hint: Text(
+                                "Category",
+                                style: TextStyle(color: Colors.white70),
+                              ),
+                              icon: Icon(Icons.arrow_drop_down),
+                              isExpanded:
+                                  true, // 👈 Important! Makes the button fill the width
+                              elevation: 16,
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  category = newValue;
+                                });
+                              },
+                              items:
+                                  items.map<DropdownMenuItem<String>>((
+                                    String value,
+                                  ) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                            ),
+                          ),
+                        ),
                         if (error != null) ...[
                           Text(
                             error!,
@@ -319,9 +362,8 @@ class _UploadState extends State<Upload> {
                             textAlign: TextAlign.center,
                           ),
                         ],
-                        Container(padding: EdgeInsets.all(10)),
+                        Container(padding: EdgeInsets.all(4)),
                         Column(
-                          spacing: 20,
                           children: [
                             Container(
                               padding: EdgeInsets.only(left: 40, right: 40),

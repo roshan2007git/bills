@@ -1,3 +1,4 @@
+import 'package:bills/backend/driveapi.dart';
 import 'package:bills/backend/refresh.dart';
 import 'package:bills/pages/directory.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +14,7 @@ class AdminPanel extends StatefulWidget {
 }
 
 class _AdminPanelState extends State<AdminPanel> {
+  Future<void> deleteUser() async {}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,6 +191,8 @@ class _UserInfoState extends State<UserInfo> {
     _getBills();
   }
 
+  DriveApi api = DriveApi();
+
   double amount = 0;
   int totalBills = 0;
 
@@ -199,7 +203,75 @@ class _UserInfoState extends State<UserInfo> {
     }
   }
 
+  Future<bool> deleteUserFolder(String folderId) async {
+    final driveApi = await api.getDriveApi(); // from your DriveApi class
+    if (driveApi == null) {
+      return false;
+    }
+
+    try {
+      await driveApi.files.delete(folderId);
+      return true;
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        showerror = true;
+      });
+      return false;
+    }
+  }
+
+  Future<bool> deleteUserCollection(String userId) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).delete();
+      return true;
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        showerror = true;
+      });
+      return false;
+    }
+  }
+
+  Future<void> deleteUser() async {
+    final docId = widget.userdata['uid'];
+    final folderId = widget.userdata['folderid'];
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(child: CircularProgressIndicator()),
+    );
+    try {
+      bool folderDeleted = await deleteUserFolder(folderId);
+      bool firestoreDeleted = await deleteUserCollection(docId);
+
+      if (!folderDeleted || !firestoreDeleted) {
+        setState(() {
+          error = 'Something went wrong while deleting user data.';
+          showerror = true;
+        });
+      }
+      if (!mounted) return;
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        showerror = true;
+      });
+    } finally {
+      Navigator.pop(context);
+      Navigator.pop(context);
+    }
+  }
+
   String? error;
+  bool showerror = false;
+
+  void hide() {
+    setState(() {
+      showerror = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -234,7 +306,10 @@ class _UserInfoState extends State<UserInfo> {
         actions: [SizedBox(width: 55)],
       ),
       body: GestureDetector(
-        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          hide();
+        },
         child: Refresh(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -507,6 +582,40 @@ class _UserInfoState extends State<UserInfo> {
                       textAlign: TextAlign.center,
                     ),
                   ),
+                ),
+              ],
+              TextButton(
+                onPressed: () {
+                  deleteUser();
+                },
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  padding: EdgeInsets.only(
+                    top: 10,
+                    bottom: 10,
+                    left: 40,
+                    right: 40,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    "Delete",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+              if (error != null && showerror == true) ...[
+                Text(
+                  error!,
+                  style: TextStyle(color: Colors.red, fontSize: 14),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ],

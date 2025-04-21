@@ -457,6 +457,7 @@ class _VerifyState extends State<Verify> {
             'bills': [],
             'folderid': folderid,
             'isAdmin': false,
+            'password': widget.password,
           });
         } catch (e) {
           if (mounted) Navigator.pop(context);
