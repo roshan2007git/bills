@@ -1,1 +1,63 @@
-{"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"storage":{"rules":"storage.rules"},"emulators":{"auth":{"port":9099},"firestore":{"port":8080},"storage":{"port":9199},"ui":{"enabled":true},"singleProjectMode":true},"flutter":{"platforms":{"android":{"default":{"projectId":"bills-app-2a7e8","appId":"1:315528552147:android:2104e2671508534bb0be26","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"bills-app-2a7e8","configurations":{"android":"1:315528552147:android:2104e2671508534bb0be26","ios":"1:315528552147:ios:23bcc6cf999bdb48b0be26","macos":"1:315528552147:ios:23bcc6cf999bdb48b0be26","web":"1:315528552147:web:341cba3c00888ae7b0be26","windows":"1:315528552147:web:97fd0cf73f8c9486b0be26"}}}}},"functions":[{"source":"functions","codebase":"default","ignore":["node_modules",".git","firebase-debug.log","firebase-debug.*.log","*.local"],"predeploy":["npm --prefix \"$RESOURCE_DIR\" run lint","npm --prefix \"$RESOURCE_DIR\" run build"]}]}
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true
+    },
+    "singleProjectMode": true
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "bills-app-2a7e8",
+          "appId": "1:315528552147:android:2104e2671508534bb0be26",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "bills-app-2a7e8",
+          "configurations": {
+            "android": "1:315528552147:android:2104e2671508534bb0be26",
+            "ios": "1:315528552147:ios:23bcc6cf999bdb48b0be26",
+            "macos": "1:315528552147:ios:23bcc6cf999bdb48b0be26",
+            "web": "1:315528552147:web:341cba3c00888ae7b0be26",
+            "windows": "1:315528552147:web:97fd0cf73f8c9486b0be26"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}
