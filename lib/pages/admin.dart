@@ -644,6 +644,13 @@ class _UserInfoState extends State<UserInfo> {
                 TextButton(
                   onPressed: () async {
                     final docId = widget.userdata['uid'];
+                    User user = FirebaseAuth.instance.currentUser!;
+                    String uid = user.uid;
+                    final data =
+                        await FirebaseFirestore.instance
+                            .collection("users")
+                            .doc(uid)
+                            .get();
                     try {
                       await FirebaseFirestore.instance
                           .collection('users')
@@ -658,8 +665,21 @@ class _UserInfoState extends State<UserInfo> {
                         error = null;
                       });
                       if (mounted) {
-                        // ignore: use_build_context_synchronously
-                        Navigator.pop(context);
+                        if (data['username'] == widget.userdata['username']) {
+                          Navigator.push(
+                            // ignore: use_build_context_synchronously
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => Directory(
+                                    currentUser: widget.currentUser,
+                                  ),
+                            ),
+                          );
+                        } else {
+                          // ignore: use_build_context_synchronously
+                          Navigator.pop(context);
+                        }
                       }
                     }
                   },
