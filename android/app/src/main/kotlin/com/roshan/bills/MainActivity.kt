@@ -1,4 +1,4 @@
-package com.example.bills
+package com.roshan.bills
 
 import io.flutter.embedding.android.FlutterActivity
 
