@@ -100,149 +100,192 @@ class _AdminPanelState extends State<AdminPanel> {
                 setState(() {});
               }
 
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 40,
-                      horizontal: 20,
-                    ),
-                    child: Container(
-                      padding: EdgeInsets.only(left: 40, right: 40),
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(100),
-                        color: Colors.black,
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 10,
+                        horizontal: 20,
                       ),
-                      child: TextButton(
-                        onPressed: () {
-                          getTotal();
-                          Navigator.push(
-                            // ignore: use_build_context_synchronously
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => TotalAmount(catlist: cate),
+                      child: Column(
+                        spacing: 10,
+                        children: [
+                          Container(
+                            padding: EdgeInsets.only(left: 40, right: 40),
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              color: Colors.black,
+                            ),
+                            child: TextButton(
+                              onPressed: () {
+                                getTotal();
+                                Navigator.push(
+                                  // ignore: use_build_context_synchronously
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => TotalAmount(catlist: cate),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "View Grand Total",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            padding: EdgeInsets.only(left: 40, right: 40),
+                            width: MediaQuery.of(context).size.width,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(100),
+                              color: Colors.black,
+                            ),
+                            child: TextButton(
+                              onPressed: () {
+                                getTotal();
+                                Navigator.push(
+                                  // ignore: use_build_context_synchronously
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Logs(),
+                                  ),
+                                );
+                              },
+                              child: Text(
+                                "View Logs",
+                                style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.70,
+                      child: ListView.builder(
+                        itemCount: users.length,
+                        itemBuilder: (context, index) {
+                          final user =
+                              users[index].data() as Map<String, dynamic>;
+
+                          return GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => UserInfo(
+                                        userdata: user,
+                                        currentUser: widget.currentUser,
+                                      ),
+                                ),
+                              );
+                            },
+                            child: ListTile(
+                              title: Text(user['name'] ?? 'WHO IS THIS?'),
+                              subtitle: Text(
+                                user['username'] ?? 'WHO IS THIS?',
+                              ),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 7,
+                                children: [
+                                  user['isApproved'] == true
+                                      ? Text(
+                                        "Approved",
+                                        style: TextStyle(color: Colors.white),
+                                      )
+                                      : TextButton(
+                                        onPressed: () async {
+                                          final docId = users[index].id;
+                                          await FirebaseFirestore.instance
+                                              .collection('users')
+                                              .doc(docId)
+                                              .update({'isApproved': true});
+
+                                          Log log = Log();
+
+                                          final userc =
+                                              FirebaseAuth.instance.currentUser;
+
+                                          DocumentSnapshot userDoc =
+                                              await FirebaseFirestore.instance
+                                                  .collection('users')
+                                                  .doc(docId)
+                                                  .get();
+
+                                          String user;
+                                          String username;
+
+                                          if (userDoc.exists &&
+                                              userDoc.data() != null &&
+                                              userc != null) {
+                                            final doc =
+                                                await FirebaseFirestore.instance
+                                                    .collection('users')
+                                                    .doc(userc.uid)
+                                                    .get();
+                                            username = doc.data()?['username'];
+                                            var userData =
+                                                userDoc.data()
+                                                    as Map<String, dynamic>;
+                                            user = userData['username'];
+                                          } else {
+                                            user = "";
+                                            username = "";
+                                          }
+
+                                          log.logdata(
+                                            username,
+                                            '$user - User approved',
+                                          );
+                                        },
+                                        child: Container(
+                                          padding: EdgeInsets.symmetric(
+                                            vertical: 7,
+                                            horizontal: 17,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            "Approve",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                  user['isAdmin'] == true
+                                      ? Icon(
+                                        Icons.verified,
+                                        color: Colors.green,
+                                      )
+                                      : Icon(Icons.person),
+                                ],
+                              ),
                             ),
                           );
                         },
-                        child: Text(
-                          "View Grand Total",
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.7,
-                    child: ListView.builder(
-                      itemCount: users.length,
-                      itemBuilder: (context, index) {
-                        final user =
-                            users[index].data() as Map<String, dynamic>;
-
-                        return GestureDetector(
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => UserInfo(
-                                      userdata: user,
-                                      currentUser: widget.currentUser,
-                                    ),
-                              ),
-                            );
-                          },
-                          child: ListTile(
-                            title: Text(user['name'] ?? 'WHO IS THIS?'),
-                            subtitle: Text(user['username'] ?? 'WHO IS THIS?'),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              spacing: 7,
-                              children: [
-                                user['isApproved'] == true
-                                    ? Text(
-                                      "Approved",
-                                      style: TextStyle(color: Colors.white),
-                                    )
-                                    : TextButton(
-                                      onPressed: () async {
-                                        final docId = users[index].id;
-                                        await FirebaseFirestore.instance
-                                            .collection('users')
-                                            .doc(docId)
-                                            .update({'isApproved': true});
-
-                                        Log log = Log();
-
-                                        final userc =
-                                            FirebaseAuth.instance.currentUser;
-
-                                        DocumentSnapshot userDoc =
-                                            await FirebaseFirestore.instance
-                                                .collection('users')
-                                                .doc(docId)
-                                                .get();
-
-                                        String user;
-                                        String username;
-
-                                        if (userDoc.exists &&
-                                            userDoc.data() != null &&
-                                            userc != null) {
-                                          final doc =
-                                              await FirebaseFirestore.instance
-                                                  .collection('users')
-                                                  .doc(userc.uid)
-                                                  .get();
-                                          username = doc.data()?['username'];
-                                          var userData =
-                                              userDoc.data()
-                                                  as Map<String, dynamic>;
-                                          user = userData['username'];
-                                        } else {
-                                          user = "";
-                                          username = "";
-                                        }
-
-                                        log.logdata(
-                                          username,
-                                          '$user - User approved',
-                                        );
-                                      },
-                                      child: Container(
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 7,
-                                          horizontal: 17,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          "Approve",
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
-                                user['isAdmin'] == true
-                                    ? Icon(Icons.verified, color: Colors.green)
-                                    : Icon(Icons.person),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           ),
@@ -956,59 +999,59 @@ class _TotalAmountState extends State<TotalAmount> {
         elevation: 0,
         actions: [SizedBox(width: 55)],
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 40),
-        child: Center(
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-            margin: EdgeInsets.symmetric(horizontal: 40),
-            decoration: BoxDecoration(
-              color: Colors.black,
-              borderRadius: BorderRadius.circular(17),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: cateEntries.length,
-                  itemBuilder: (context, index) {
-                    final entry = cateEntries[index];
-                    return ListTile(
-                      visualDensity: VisualDensity(vertical: -4),
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(
-                        entry.key,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 17,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 40),
+          child: Center(
+            child: Container(
+              padding: EdgeInsets.symmetric(vertical: 30),
+              margin: EdgeInsets.symmetric(horizontal: 40),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(17),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: cateEntries.length,
+                    itemBuilder: (context, index) {
+                      final entry = cateEntries[index];
+                      return ListTile(
+                        visualDensity: VisualDensity(vertical: -4),
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(
+                          entry.key,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                          ),
                         ),
-                      ),
-                      subtitle: Text("₹${entry.value.toString()}"),
-                    );
-                  },
-                ),
-                SizedBox(height: 10),
-                Center(
-                  child: Column(
-                    children: [
-                      Text(
-                        "Grand Total",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 20,
-                        ),
-                      ),
-                      Text(
-                        "₹${amount.toString()}",
-                        style: TextStyle(color: Colors.white, fontSize: 17),
-                      ),
-                    ],
+                        subtitle: Text("₹${entry.value.toString()}"),
+                      );
+                    },
                   ),
-                ),
-              ],
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(
+                          "Grand Total",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Text(
+                          "₹${amount.toString()}",
+                          style: TextStyle(color: Colors.white, fontSize: 17),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1284,6 +1327,77 @@ class _ViewBillsState extends State<ViewBills> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class Logs extends StatefulWidget {
+  const Logs({super.key});
+
+  @override
+  State<Logs> createState() => _LogsState();
+}
+
+class _LogsState extends State<Logs> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[900],
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.grey[900],
+        centerTitle: true,
+        title: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                "LOGS",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        elevation: 0,
+        actions: [SizedBox(width: 55)],
+      ),
+      body: FutureBuilder<QuerySnapshot>(
+        future: FirebaseFirestore.instance.collection('logs').get(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting)
+            return Center(child: CircularProgressIndicator());
+
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+            return Center(child: Text('No logs found'));
+
+          // Sort by document ID parsed as DateTime in descending order
+          final logs =
+              snapshot.data!.docs.toList()..sort(
+                (a, b) => DateTime.parse(b.id).compareTo(DateTime.parse(a.id)),
+              );
+
+          return ListView.builder(
+            itemCount: logs.length,
+            itemBuilder: (context, index) {
+              final doc = logs[index];
+              final data = doc['data'] ?? 'No data';
+              final user = doc['user'] ?? 'Unknown';
+
+              return ListTile(title: Text(data), subtitle: Text('- $user'));
+            },
+          );
+        },
       ),
     );
   }
