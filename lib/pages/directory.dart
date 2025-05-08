@@ -1,3 +1,4 @@
+import 'package:bills/backend/log.dart';
 import 'package:bills/backend/usercall.dart';
 import 'package:bills/pages/info.dart';
 import 'package:bills/pages/login.dart';
@@ -119,11 +120,29 @@ class _DirectoryState extends State<Directory> {
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+    final user = FirebaseAuth.instance.currentUser;
+    String username = "";
+
+    Log log = Log();
+
+    if (user != null) {
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+      username = doc.data()?['username'];
+    }
+
     try {
-      await FirebaseAuth.instance.signOut(); // This logs the user out
+      await FirebaseAuth.instance.signOut();
+      log.logdata(username, 'User Signed Out'); // This logs the user out
     } catch (e) {
+      log.logdata(username, 'User Sign out failed');
       if (mounted) Navigator.pop(context);
-      error = e.toString();
+      setState(() {
+        error = e.toString();
+      });
     } finally {
       if (mounted) {
         Navigator.push(

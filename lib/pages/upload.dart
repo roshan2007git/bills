@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:bills/backend/fileupload.dart';
+import 'package:bills/backend/log.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,6 +25,7 @@ class _UploadState extends State<Upload> {
   String? errorDate;
   String? errorUpload;
   String? category;
+  String? errorCat;
 
   List<String> items = [
     'Logistics',
@@ -34,46 +37,69 @@ class _UploadState extends State<Upload> {
     'Registrations',
     'Security',
     'Marketing',
+    'Transport',
   ];
+
+  bool showerror = false;
 
   void _errors() {
     if (_dateController.text.isEmpty) {
       setState(() {
         errorDate = "Date Required";
+        showerror = true;
       });
     } else {
       setState(() {
         errorDate = null;
+        showerror = false;
       });
     }
 
     if (_nameController.text.isEmpty) {
       setState(() {
-        errorName = "name Required";
+        errorName = "Name Required";
+        showerror = true;
       });
     } else {
       setState(() {
         errorName = null;
+        showerror = false;
       });
     }
 
     if (_amountController.text.isEmpty) {
       setState(() {
         errorAmount = "Date Required";
+        showerror = true;
       });
     } else {
       setState(() {
         errorAmount = null;
+        showerror = false;
       });
     }
 
     if (image == null) {
       setState(() {
         errorUpload = "Image Required";
+        showerror = true;
       });
     } else {
       setState(() {
         errorUpload = null;
+        showerror = false;
+      });
+    }
+
+    if (category == null) {
+      setState(() {
+        errorCat = "Category Required";
+        showerror = true;
+      });
+    } else {
+      setState(() {
+        errorCat = null;
+        showerror = false;
       });
     }
   }
@@ -83,11 +109,24 @@ class _UploadState extends State<Upload> {
     if (errorAmount == null &&
         errorName == null &&
         errorDate == null &&
-        errorUpload == null) {
+        errorUpload == null &&
+        errorCat == null) {
       return true;
     } else {
       return false;
     }
+  }
+
+  void hide() {
+    setState(() {
+      errorAmount = null;
+      errorCat = null;
+      errorDate = null;
+      errorUpload = null;
+      errorName = null;
+      error = null;
+      showerror = false;
+    });
   }
 
   String folderID =
@@ -109,6 +148,8 @@ class _UploadState extends State<Upload> {
     _nameController.dispose();
     _amountController.dispose();
   }
+
+  Log log = Log();
 
   Future<void> _imagePicker() async {
     showDialog(
@@ -156,6 +197,7 @@ class _UploadState extends State<Upload> {
 
   Future<void> _upload(String date, String name, double amount) async {
     bool c = check();
+
     if (email == null || c == false) {
       return;
     } else {
@@ -164,9 +206,28 @@ class _UploadState extends State<Upload> {
         barrierDismissible: false,
         builder: (context) => const Center(child: CircularProgressIndicator()),
       );
+      String username;
+
+      final user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        final doc =
+            await FirebaseFirestore.instance
+                .collection('users')
+                .doc(user.uid)
+                .get();
+        username = doc.data()?['username'];
+      } else {
+        username = "";
+      }
       try {
         await upload.uploadfile(email!, date, name, amount, image!, category!);
+        log.logdata(username, '$name - Bill Uploaded Successfully');
       } catch (e) {
+        if (mounted) {
+          Navigator.pop(context);
+        }
+        log.logdata(username, '$name - Bill Upload Failed');
         setState(() {
           error = e.toString();
         });
@@ -224,7 +285,10 @@ class _UploadState extends State<Upload> {
         child: RefreshIndicator(
           onRefresh: _refresh,
           child: GestureDetector(
-            onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              hide();
+            },
             child: Container(
               padding: EdgeInsets.only(top: 40, right: 35, left: 35),
               color: Colors.grey[900],
@@ -327,33 +391,54 @@ class _UploadState extends State<Upload> {
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
-                          child: SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            child: DropdownButton<String>(
-                              value: category,
-                              hint: Text(
-                                "Category",
-                                style: TextStyle(color: Colors.white70),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width,
+                                child: DropdownButton<String>(
+                                  value: category,
+                                  hint: Text(
+                                    "Category",
+                                    style: TextStyle(color: Colors.white70),
+                                  ),
+                                  icon: Icon(Icons.arrow_drop_down),
+                                  isExpanded:
+                                      true, // 👈 Important! Makes the button fill the width
+                                  elevation: 16,
+                                  onChanged: (String? newValue) {
+                                    setState(() {
+                                      category = newValue;
+                                      showerror = false;
+                                      errorCat = null;
+                                    });
+                                  },
+                                  items:
+                                      items.map<DropdownMenuItem<String>>((
+                                        String value,
+                                      ) {
+                                        return DropdownMenuItem<String>(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
+                                ),
                               ),
-                              icon: Icon(Icons.arrow_drop_down),
-                              isExpanded:
-                                  true, // 👈 Important! Makes the button fill the width
-                              elevation: 16,
-                              onChanged: (String? newValue) {
-                                setState(() {
-                                  category = newValue;
-                                });
-                              },
-                              items:
-                                  items.map<DropdownMenuItem<String>>((
-                                    String value,
-                                  ) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                            ),
+                              if (showerror && errorCat != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                    top: 5,
+                                    left: 8,
+                                  ),
+                                  child: Text(
+                                    errorCat!,
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                         ),
                         if (error != null) ...[

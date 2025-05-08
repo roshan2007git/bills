@@ -127,7 +127,7 @@ class _LoginState extends State<Login> {
         } else {
           if (mounted) Navigator.pop(context);
           setState(() {
-            error = 'Sign-in failed. Please check your Email and Password.';
+            error = 'Sign-in failed. Please check your Username and Password.';
             showerror = true;
           });
         }

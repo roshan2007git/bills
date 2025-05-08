@@ -2,6 +2,7 @@
 
 import 'package:bills/backend/email.dart';
 import 'package:bills/backend/foldercreate.dart';
+import 'package:bills/backend/log.dart';
 import 'package:bills/pages/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -423,6 +424,8 @@ class _VerifyState extends State<Verify> {
     errorotp = false;
   }
 
+  Log log = Log();
+
   void handleVerification() async {
     CreateFolder folder = CreateFolder();
     if (_otp == getotp()) {
@@ -459,7 +462,9 @@ class _VerifyState extends State<Verify> {
             'isAdmin': false,
             'password': widget.password,
           });
+          log.logdata(widget.username, 'User Created Successfully');
         } catch (e) {
+          log.logdata(widget.username, 'User Creation Failed');
           if (mounted) Navigator.pop(context);
           setState(() {
             error = e.toString();

@@ -1,3 +1,4 @@
+import 'package:bills/backend/log.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -6,6 +7,7 @@ class CustomLogin {
     String username,
     String password,
   ) async {
+    Log log = Log();
     try {
       QuerySnapshot usernameSnapshot =
           await FirebaseFirestore.instance
@@ -27,8 +29,11 @@ class CustomLogin {
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
 
+      log.logdata(username, 'User logged in');
+
       return userCredential;
     } catch (e) {
+      log.logdata(username, 'Login Attempt Failed');
       return null;
     }
   }
