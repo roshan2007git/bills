@@ -1,3 +1,4 @@
+import 'package:bills/backend/log.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/googleapis_auth.dart' as auth;
 import 'package:bills/backend/driveapi.dart';
@@ -80,6 +81,7 @@ class _AdminPanelState extends State<AdminPanel> {
                 'Registrations': 0,
                 'Security': 0,
                 'Marketing': 0,
+                'Transport': 0,
               };
 
               getTotal() {
@@ -175,6 +177,43 @@ class _AdminPanelState extends State<AdminPanel> {
                                             .collection('users')
                                             .doc(docId)
                                             .update({'isApproved': true});
+
+                                        Log log = Log();
+
+                                        final userc =
+                                            FirebaseAuth.instance.currentUser;
+
+                                        DocumentSnapshot userDoc =
+                                            await FirebaseFirestore.instance
+                                                .collection('users')
+                                                .doc(docId)
+                                                .get();
+
+                                        String user;
+                                        String username;
+
+                                        if (userDoc.exists &&
+                                            userDoc.data() != null &&
+                                            userc != null) {
+                                          final doc =
+                                              await FirebaseFirestore.instance
+                                                  .collection('users')
+                                                  .doc(userc.uid)
+                                                  .get();
+                                          username = doc.data()?['username'];
+                                          var userData =
+                                              userDoc.data()
+                                                  as Map<String, dynamic>;
+                                          user = userData['username'];
+                                        } else {
+                                          user = "";
+                                          username = "";
+                                        }
+
+                                        log.logdata(
+                                          username,
+                                          '$user - User approved',
+                                        );
                                       },
                                       child: Container(
                                         padding: EdgeInsets.symmetric(
@@ -279,11 +318,29 @@ class _UserInfoState extends State<UserInfo> {
   Future<void> deleteUser() async {
     final docId = widget.userdata['uid'];
     final folderId = widget.userdata['folderid'];
+    final name = widget.userdata['username'];
+    final user = FirebaseAuth.instance.currentUser;
+    String username;
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+
+    if (user != null) {
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+      username = doc.data()?['username'];
+    } else {
+      username = "";
+    }
+
+    Log log = Log();
+
     try {
       bool folderDeleted = await deleteUserFolder(folderId);
       bool firestoreDeleted = await deleteUserCollection(docId);
@@ -294,14 +351,18 @@ class _UserInfoState extends State<UserInfo> {
           showerror = true;
         });
       }
+      log.logdata(username, '$name - User deleted Successfully');
       if (!mounted) return;
     } catch (e) {
+      log.logdata(username, '$name - User deletion failed');
       setState(() {
         error = e.toString();
         showerror = true;
       });
     } finally {
+      // ignore: use_build_context_synchronously
       Navigator.pop(context);
+      // ignore: use_build_context_synchronously
       Navigator.pop(context);
     }
   }
@@ -530,12 +591,47 @@ class _UserInfoState extends State<UserInfo> {
                 TextButton(
                   onPressed: () async {
                     final docId = widget.userdata['uid'];
+                    Log log = Log();
+
+                    final userc = FirebaseAuth.instance.currentUser;
+
+                    DocumentSnapshot userDoc =
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(docId)
+                            .get();
+
+                    String user;
+                    String username;
+
+                    if (userDoc.exists &&
+                        userDoc.data() != null &&
+                        userc != null) {
+                      final doc =
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(userc.uid)
+                              .get();
+                      username = doc.data()?['username'];
+                      var userData = userDoc.data() as Map<String, dynamic>;
+                      user = userData['username'];
+                    } else {
+                      user = "";
+                      username = "";
+                    }
+
                     try {
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(docId)
                           .update({'isAdmin': true});
+
+                      log.logdata(
+                        username,
+                        '$user - User made Admin successfully',
+                      );
                     } catch (e) {
+                      log.logdata(username, '$user - Enabling Admin failed');
                       setState(() {
                         error = e.toString();
                       });
@@ -577,19 +673,48 @@ class _UserInfoState extends State<UserInfo> {
                 TextButton(
                   onPressed: () async {
                     final docId = widget.userdata['uid'];
-                    User user = FirebaseAuth.instance.currentUser!;
-                    String uid = user.uid;
+                    final userc = FirebaseAuth.instance.currentUser;
+                    String uid = userc!.uid;
                     final data =
                         await FirebaseFirestore.instance
                             .collection("users")
                             .doc(uid)
                             .get();
+                    Log log = Log();
+
+                    DocumentSnapshot userDoc =
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(docId)
+                            .get();
+
+                    String user;
+                    String username;
+
+                    if (userDoc.exists && userDoc.data() != null) {
+                      final doc =
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(uid)
+                              .get();
+                      username = doc.data()?['username'];
+                      var userData = userDoc.data() as Map<String, dynamic>;
+                      user = userData['username'];
+                    } else {
+                      user = "";
+                      username = "";
+                    }
                     try {
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(docId)
                           .update({'isAdmin': false});
+                      log.logdata(
+                        username,
+                        '$user - Removed as Admin successfully',
+                      );
                     } catch (e) {
+                      log.logdata(username, '$user - Removal as Admin Failed');
                       setState(() {
                         error = e.toString();
                       });
@@ -644,19 +769,45 @@ class _UserInfoState extends State<UserInfo> {
                 TextButton(
                   onPressed: () async {
                     final docId = widget.userdata['uid'];
-                    User user = FirebaseAuth.instance.currentUser!;
-                    String uid = user.uid;
+                    final userc = FirebaseAuth.instance.currentUser;
+                    String uid = userc!.uid;
                     final data =
                         await FirebaseFirestore.instance
                             .collection("users")
                             .doc(uid)
                             .get();
+                    Log log = Log();
+
+                    DocumentSnapshot userDoc =
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(docId)
+                            .get();
+
+                    String user;
+                    String username;
+
+                    if (userDoc.exists && userDoc.data() != null) {
+                      final doc =
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(uid)
+                              .get();
+                      username = doc.data()?['username'];
+                      var userData = userDoc.data() as Map<String, dynamic>;
+                      user = userData['username'];
+                    } else {
+                      user = "";
+                      username = "";
+                    }
                     try {
                       await FirebaseFirestore.instance
                           .collection('users')
                           .doc(docId)
                           .update({'isApproved': false});
+                      log.logdata(username, '$user - Disapproved');
                     } catch (e) {
+                      log.logdata(username, '$user - Disapproval Failed');
                       setState(() {
                         error = e.toString();
                       });
@@ -991,11 +1142,28 @@ class _ViewBillsState extends State<ViewBills> {
       barrierDismissible: false,
       builder: (context) => const Center(child: CircularProgressIndicator()),
     );
+    Log log = Log();
+    String username;
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null) {
+      final doc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+      username = doc.data()?['username'];
+    } else {
+      username = "";
+    }
     try {
       await deleteBillByName(name);
       await deleteFileFromFolder(name);
+      log.logdata(username, '$name - Bill deleted successfully');
       if (!mounted) return;
     } catch (e) {
+      log.logdata(username, '$name - Bill deletion failed');
       setState(() {
         error = e.toString();
         showerror = true;
