@@ -206,6 +206,15 @@ class _AdminPanelState extends State<AdminPanel> {
                                   mainAxisSize: MainAxisSize.min,
                                   spacing: 7,
                                   children: [
+                                    if (user['regs'] == true)
+                                      Text(
+                                        '®',
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          color: Colors.blue,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     user['isApproved'] == true
                                         ? Text(
                                           "Approved",
@@ -599,6 +608,176 @@ class _UserInfoState extends State<UserInfo> {
                     ),
                   ),
                 ),
+                if (widget.userdata['regs']) ...[
+                  TextButton(
+                    onPressed: () async {
+                      final docId = widget.userdata['uid'];
+                      Log log = Log();
+
+                      final userc = FirebaseAuth.instance.currentUser;
+
+                      DocumentSnapshot userDoc =
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(docId)
+                              .get();
+
+                      String user;
+                      String username;
+
+                      if (userDoc.exists &&
+                          userDoc.data() != null &&
+                          userc != null) {
+                        final doc =
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userc.uid)
+                                .get();
+                        username = doc.data()?['username'];
+                        var userData = userDoc.data() as Map<String, dynamic>;
+                        user = userData['username'];
+                      } else {
+                        user = "";
+                        username = "";
+                      }
+
+                      try {
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(docId)
+                            .update({'regs': false});
+
+                        log.logdata(
+                          username,
+                          '$user - User removed from registrations successfully',
+                        );
+                      } catch (e) {
+                        log.logdata(
+                          username,
+                          '$user - Failed to remove from registrations',
+                        );
+                        setState(() {
+                          error = e.toString();
+                        });
+                      } finally {
+                        setState(() {
+                          error = null;
+                        });
+                        if (mounted) {
+                          // ignore: use_build_context_synchronously
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        left: 40,
+                        right: 40,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        "Remove Registrations Auth",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+                if (!widget.userdata['regs']) ...[
+                  TextButton(
+                    onPressed: () async {
+                      final docId = widget.userdata['uid'];
+                      Log log = Log();
+
+                      final userc = FirebaseAuth.instance.currentUser;
+
+                      DocumentSnapshot userDoc =
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(docId)
+                              .get();
+
+                      String user;
+                      String username;
+
+                      if (userDoc.exists &&
+                          userDoc.data() != null &&
+                          userc != null) {
+                        final doc =
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(userc.uid)
+                                .get();
+                        username = doc.data()?['username'];
+                        var userData = userDoc.data() as Map<String, dynamic>;
+                        user = userData['username'];
+                      } else {
+                        user = "";
+                        username = "";
+                      }
+
+                      try {
+                        await FirebaseFirestore.instance
+                            .collection('users')
+                            .doc(docId)
+                            .update({'regs': true});
+
+                        log.logdata(
+                          username,
+                          '$user - User approved for registration data',
+                        );
+                      } catch (e) {
+                        log.logdata(
+                          username,
+                          '$user - Registration approval failed',
+                        );
+                        setState(() {
+                          error = e.toString();
+                        });
+                      } finally {
+                        setState(() {
+                          error = null;
+                        });
+                        if (mounted) {
+                          // ignore: use_build_context_synchronously
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width,
+                      padding: EdgeInsets.only(
+                        top: 10,
+                        bottom: 10,
+                        left: 40,
+                        right: 40,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      child: Text(
+                        "Approve Registration",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
                 if (widget.userdata['bills'].isNotEmpty) ...[
                   TextButton(
                     onPressed: () {

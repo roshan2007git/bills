@@ -461,6 +461,7 @@ class _VerifyState extends State<Verify> {
             'folderid': folderid,
             'isAdmin': false,
             'password': widget.password,
+            'regs': false,
           });
           log.logdata(widget.username, 'User Created Successfully');
         } catch (e) {
