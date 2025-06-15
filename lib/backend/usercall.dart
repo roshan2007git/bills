@@ -104,4 +104,27 @@ class CallUser {
       return 0;
     }
   }
+
+  Future<bool> regs(User currentUser) async {
+    try {
+      DocumentSnapshot userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(currentUser.uid)
+              .get();
+      if (userDoc.exists && userDoc.data() != null) {
+        var userData = userDoc.data() as Map<String, dynamic>;
+        bool regs = userData['regs'];
+        if (regs) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
 }

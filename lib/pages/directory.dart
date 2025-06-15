@@ -7,6 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:bills/backend/refresh.dart';
+import 'package:bills/pages/registrations.dart';
 
 const List names = ['John', 'Jacob', 'Aron', 'Amy', 'Brad', 'Ben'];
 
@@ -22,6 +23,7 @@ class _DirectoryState extends State<Directory> {
   String? name;
   List? bills;
   double? amount;
+  bool regs = false;
   CallUser val = CallUser();
 
   Future<void> _fetchName() async {
@@ -29,6 +31,15 @@ class _DirectoryState extends State<Directory> {
     if (mounted) {
       setState(() {
         name = fetchedName; // Update the state with the fetched name
+      });
+    }
+  }
+
+  Future<void> _fetchRegs() async {
+    bool fetchedregs = await val.regs(widget.currentUser);
+    if (mounted) {
+      setState(() {
+        regs = fetchedregs; // Update the state with the fetched name
       });
     }
   }
@@ -111,6 +122,7 @@ class _DirectoryState extends State<Directory> {
     _fetchbills();
     _fetchamount();
     _checkApprovalStatus();
+    _fetchRegs();
   }
 
   String? error;
@@ -157,6 +169,7 @@ class _DirectoryState extends State<Directory> {
     await _fetchName();
     await _fetchamount();
     await _fetchbills();
+    await _fetchRegs();
   }
 
   @override
@@ -207,7 +220,7 @@ class _DirectoryState extends State<Directory> {
                         color: Colors.white,
                       ),
                       child: Text(
-                        "Total Amount: ₹$amount",
+                        "Total Amount: ₹${amount?.toStringAsFixed(2)}",
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
@@ -283,7 +296,7 @@ class _DirectoryState extends State<Directory> {
                 width: MediaQuery.of(context).size.width,
                 padding: EdgeInsets.only(
                   top: 40,
-                  bottom: 40,
+                  bottom: 10,
                   right: 25,
                   left: 25,
                 ),
@@ -334,6 +347,42 @@ class _DirectoryState extends State<Directory> {
                             ),
                       ),
                     ),
+                    if (regs)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder:
+                                  (context) => Registrations(
+                                    currentUser: widget.currentUser,
+                                  ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: MediaQuery.of(context).size.width,
+                          padding: EdgeInsets.only(
+                            top: 10,
+                            bottom: 10,
+                            left: 40,
+                            right: 40,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(100),
+                          ),
+                          child: Text(
+                            "Registrations",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
