@@ -163,14 +163,30 @@ class _IndividualState extends State<Individual> {
                                   name = name
                                       .replaceAll('_', ' ')
                                       .replaceAll('-', ' ');
-                                  return ListTile(
-                                    title: Text(
-                                      "T25N$uid",
-                                      style: TextStyle(color: Colors.white),
-                                    ),
-                                    subtitle: Text(
-                                      name,
-                                      style: TextStyle(color: Colors.white70),
+                                  return GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder:
+                                              (context) => TeamInfo(
+                                                currentUser: widget.currentUser,
+                                                data: data,
+                                                uid: "T25N$uid",
+                                                event: name,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                    child: ListTile(
+                                      title: Text(
+                                        "T25N$uid",
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      subtitle: Text(
+                                        name,
+                                        style: TextStyle(color: Colors.white70),
+                                      ),
                                     ),
                                   );
                                 },
@@ -182,6 +198,123 @@ class _IndividualState extends State<Individual> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class TeamInfo extends StatefulWidget {
+  final User currentUser;
+  final Map<String, dynamic> data;
+  final String uid;
+  final String event;
+
+  const TeamInfo({
+    super.key,
+    required this.currentUser,
+    required this.data,
+    required this.uid,
+    required this.event,
+  });
+
+  @override
+  State<TeamInfo> createState() => _TeamInfoState();
+}
+
+class _TeamInfoState extends State<TeamInfo> {
+  @override
+  Widget build(BuildContext context) {
+    final name = widget.data['fName'] ?? 'N/A';
+    final number = widget.data['phoneNumber'] ?? 'N/A';
+    final email = widget.data['email'] ?? 'N/A';
+    final dob = widget.data['dateOfBirth'] ?? 'N/A';
+    final teammates = widget.data['event']['teammates'] ?? [];
+
+    return Scaffold(
+      backgroundColor: Colors.grey[900],
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.grey[900],
+        centerTitle: true,
+        title: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                widget.uid,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        elevation: 0,
+        actions: [SizedBox(width: 55)],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Center(
+                child: Text(
+                  "Event: ${widget.event.toUpperCase()}",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ),
+            ),
+            // Captain Card
+            _buildPersonCard(name, number, email, dob),
+            // Teammates (if any)
+            if (teammates is List && teammates.isNotEmpty)
+              ...teammates.map<Widget>((teammate) {
+                final tName = teammate['name'] ?? 'N/A';
+                final tNumber = teammate['phoneNumber'] ?? 'N/A';
+                final tEmail = teammate['email'] ?? 'N/A';
+                final tDob = teammate['dateOfBirth'] ?? 'N/A';
+                return _buildPersonCard(tName, tNumber, tEmail, tDob);
+              }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonCard(
+    String name,
+    String number,
+    String email,
+    String dob,
+  ) {
+    return Container(
+      margin: EdgeInsets.all(10),
+      padding: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Name: $name", style: TextStyle(color: Colors.white)),
+          Text("Phone: $number", style: TextStyle(color: Colors.white)),
+          Text("Email: $email", style: TextStyle(color: Colors.white)),
+          Text("DOB: $dob", style: TextStyle(color: Colors.white)),
+        ],
       ),
     );
   }

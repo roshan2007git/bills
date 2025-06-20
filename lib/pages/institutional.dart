@@ -166,9 +166,7 @@ class _InstitutionalState extends State<Institutional> {
                                           builder:
                                               (context) => TeamInfo(
                                                 currentUser: widget.currentUser,
-                                                data:
-                                                    doc.data()
-                                                        as Map<String, dynamic>,
+                                                data: data,
                                                 uid: "T25N$uid",
                                               ),
                                         ),
@@ -409,12 +407,27 @@ class _TeamInfoState extends State<TeamInfo> {
                               final category = event['category'] ?? '';
                               eventName = '$name $category';
                             }
-                            return ListTile(
-                              title: Text(
-                                eventName
-                                    .replaceAll("-", " ")
-                                    .replaceAll("_", " "),
-                                style: TextStyle(color: Colors.white),
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder:
+                                        (context) => ParticipantInfo(
+                                          currentUser: widget.currentUser,
+                                          data: filteredEvents[index],
+                                          event: eventName.toUpperCase(),
+                                        ),
+                                  ),
+                                );
+                              },
+                              child: ListTile(
+                                title: Text(
+                                  eventName
+                                      .replaceAll("-", " ")
+                                      .replaceAll("_", " "),
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
                             );
                           },
@@ -444,6 +457,101 @@ class _TeamInfoState extends State<TeamInfo> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class ParticipantInfo extends StatefulWidget {
+  final User currentUser;
+  final Map<String, dynamic> data;
+  final String event;
+  const ParticipantInfo({
+    super.key,
+    required this.currentUser,
+    required this.data,
+    required this.event,
+  });
+
+  @override
+  State<ParticipantInfo> createState() => _ParticipantInfoState();
+}
+
+class _ParticipantInfoState extends State<ParticipantInfo> {
+  @override
+  Widget build(BuildContext context) {
+    final teammates = widget.data['participants'] ?? [];
+
+    return Scaffold(
+      backgroundColor: Colors.grey[900],
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back),
+          color: Colors.white,
+        ),
+        backgroundColor: Colors.grey[900],
+        centerTitle: true,
+        title: Stack(
+          children: [
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                widget.event,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        elevation: 0,
+        actions: [SizedBox(width: 55)],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Teammates (if any)
+            if (teammates is List && teammates.isNotEmpty)
+              ...teammates.map<Widget>((teammate) {
+                final tName = teammate['name'] ?? 'N/A';
+                final tNumber = teammate['phoneNumber'] ?? 'N/A';
+                final tEmail = teammate['email'] ?? 'N/A';
+                final tDob = teammate['dateOfBirth'] ?? 'N/A';
+                return _buildPersonCard(tName, tNumber, tEmail, tDob);
+              }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPersonCard(
+    String name,
+    String number,
+    String email,
+    String dob,
+  ) {
+    return Container(
+      margin: EdgeInsets.all(10),
+      padding: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Name: $name", style: TextStyle(color: Colors.white)),
+          Text("Phone: $number", style: TextStyle(color: Colors.white)),
+          Text("Email: $email", style: TextStyle(color: Colors.white)),
+          Text("DOB: $dob", style: TextStyle(color: Colors.white)),
+        ],
       ),
     );
   }
