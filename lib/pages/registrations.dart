@@ -2,6 +2,7 @@ import 'package:bills/backend/refresh.dart';
 import 'package:bills/backend/reginfo.dart';
 import 'package:bills/pages/directory.dart';
 import 'package:bills/pages/individual.dart';
+import 'package:bills/pages/institutional.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -129,7 +130,15 @@ class _RegistrationsState extends State<Registrations> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        //
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => Institutional(
+                                  currentUser: widget.currentUser,
+                                ),
+                          ),
+                        );
                       },
                       child: Text(
                         "Institutional",

@@ -134,7 +134,8 @@ class _IndividualState extends State<Individual> {
                               eventName.contains(searchQuery);
                         }).toList();
 
-                    return Expanded(
+                    return SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.74,
                       child:
                           filteredDocs.isEmpty
                               ? Center(

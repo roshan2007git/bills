@@ -63,29 +63,10 @@ class RegInfo {
           String name = event['name'];
           String? category = event['category'];
           if (name == 'stratagem') {
-            if (category == 'fc_mobile' || category == 'chess') {
-              eventCounts['$name-$category'] =
-                  (eventCounts['$name-$category'] ?? 0) + 1;
-            } else if (category == 'valorant') {
-              eventCounts['$name-$category'] =
-                  (eventCounts['$name-$category'] ?? 0) + 5;
-            } else if (category == 'brawl_stars') {
-              eventCounts['$name-$category'] =
-                  (eventCounts['$name-$category'] ?? 0) + 3;
-            } else {
-              eventCounts['$name-$category'] =
-                  (eventCounts['$name-$category'] ?? 0) + 0;
-            }
-          } else if (name == '221b') {
-            if (category == 'trio') {
-              eventCounts[name] = (eventCounts[name] ?? 0) + 3;
-            } else if (category == 'duo') {
-              eventCounts[name] = (eventCounts[name] ?? 0) + 2;
-            } else {
-              eventCounts[name] = (eventCounts[name] ?? 0) + 0;
-            }
+            eventCounts['$name-$category'] =
+                (eventCounts['$name-$category'] ?? 0) + 1;
           } else {
-            eventCounts[name] = (eventCounts[name] ?? 0) + 2;
+            eventCounts[name] = (eventCounts[name] ?? 0) + 1;
           }
         }
       }
@@ -98,29 +79,10 @@ class RegInfo {
             String name = event['name'];
             String? category = event['category'];
             if (name == 'stratagem') {
-              if (category == 'fc_mobile' || category == 'chess') {
-                eventCounts['$name-$category'] =
-                    (eventCounts['$name-$category'] ?? 0) + 1;
-              } else if (category == 'valorant') {
-                eventCounts['$name-$category'] =
-                    (eventCounts['$name-$category'] ?? 0) + 5;
-              } else if (category == 'brawl_stars') {
-                eventCounts['$name-$category'] =
-                    (eventCounts['$name-$category'] ?? 0) + 3;
-              } else {
-                eventCounts['$name-$category'] =
-                    (eventCounts['$name-$category'] ?? 0) + 0;
-              }
-            } else if (name == '221b') {
-              if (category == 'trio') {
-                eventCounts[name] = (eventCounts[name] ?? 0) + 3;
-              } else if (category == 'duo') {
-                eventCounts[name] = (eventCounts[name] ?? 0) + 2;
-              } else {
-                eventCounts[name] = (eventCounts[name] ?? 0) + 0;
-              }
+              eventCounts['$name-$category'] =
+                  (eventCounts['$name-$category'] ?? 0) + 1;
             } else {
-              eventCounts[name] = (eventCounts[name] ?? 0) + 2;
+              eventCounts[name] = (eventCounts[name] ?? 0) + 1;
             }
           }
         }
@@ -128,7 +90,6 @@ class RegInfo {
 
       return eventCounts;
     } catch (e) {
-      print('Error fetching event counts: $e');
       return {};
     }
   }

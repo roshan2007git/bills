@@ -13,6 +13,9 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]).then((_) {
+    FlutterError.onError = (details) {
+      FlutterError.dumpErrorToConsole(details);
+    };
     runApp(MyApp());
   });
 }
