@@ -524,7 +524,7 @@ class _ParticipantInfoState extends State<ParticipantInfo> {
                 final tEmail = teammate['email'] ?? 'N/A';
                 final tDob = teammate['dateOfBirth'] ?? 'N/A';
                 return _buildPersonCard(tName, tNumber, tEmail, tDob);
-              }).toList(),
+              }),
           ],
         ),
       ),
