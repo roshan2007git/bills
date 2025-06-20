@@ -206,15 +206,30 @@ class _AdminPanelState extends State<AdminPanel> {
                                   mainAxisSize: MainAxisSize.min,
                                   spacing: 7,
                                   children: [
-                                    if (user['regs'] == true)
-                                      Text(
-                                        '®',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          color: Colors.blue,
-                                          fontWeight: FontWeight.bold,
+                                    if (user['regs'] == true) ...[
+                                      if (user['edit'] != null &&
+                                          user['edit']) ...[
+                                        Text(
+                                          '®',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
+                                      ],
+                                      if (user['edit'] == null ||
+                                          user['edit'] == false) ...[
+                                        Text(
+                                          '®',
+                                          style: TextStyle(
+                                            fontSize: 24,
+                                            color: Colors.blue,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                     user['isApproved'] == true
                                         ? Text(
                                           "Approved",
@@ -481,7 +496,7 @@ class _UserInfoState extends State<UserInfo> {
               children: [
                 Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 40, horizontal: 20),
+                    padding: EdgeInsets.symmetric(vertical: 20, horizontal: 20),
                     child: Container(
                       alignment: Alignment.topLeft,
                       width: MediaQuery.of(context).size.width * 0.95,
@@ -609,88 +624,272 @@ class _UserInfoState extends State<UserInfo> {
                   ),
                 ),
                 if (widget.userdata['regs']) ...[
-                  TextButton(
-                    onPressed: () async {
-                      final docId = widget.userdata['uid'];
-                      Log log = Log();
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () async {
+                          final docId = widget.userdata['uid'];
+                          Log log = Log();
 
-                      final userc = FirebaseAuth.instance.currentUser;
+                          final userc = FirebaseAuth.instance.currentUser;
 
-                      DocumentSnapshot userDoc =
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(docId)
-                              .get();
+                          DocumentSnapshot userDoc =
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(docId)
+                                  .get();
 
-                      String user;
-                      String username;
+                          String user;
+                          String username;
 
-                      if (userDoc.exists &&
-                          userDoc.data() != null &&
-                          userc != null) {
-                        final doc =
+                          if (userDoc.exists &&
+                              userDoc.data() != null &&
+                              userc != null) {
+                            final doc =
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(userc.uid)
+                                    .get();
+                            username = doc.data()?['username'];
+                            var userData =
+                                userDoc.data() as Map<String, dynamic>;
+                            user = userData['username'];
+                          } else {
+                            user = "";
+                            username = "";
+                          }
+
+                          try {
                             await FirebaseFirestore.instance
                                 .collection('users')
-                                .doc(userc.uid)
-                                .get();
-                        username = doc.data()?['username'];
-                        var userData = userDoc.data() as Map<String, dynamic>;
-                        user = userData['username'];
-                      } else {
-                        user = "";
-                        username = "";
-                      }
+                                .doc(docId)
+                                .update({'regs': false});
+                            await FirebaseFirestore.instance
+                                .collection('users')
+                                .doc(docId)
+                                .update({'edit': false});
 
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(docId)
-                            .update({'regs': false});
-
-                        log.logdata(
-                          username,
-                          '$user - User removed from registrations successfully',
-                        );
-                      } catch (e) {
-                        log.logdata(
-                          username,
-                          '$user - Failed to remove from registrations',
-                        );
-                        setState(() {
-                          error = e.toString();
-                        });
-                      } finally {
-                        setState(() {
-                          error = null;
-                        });
-                        if (mounted) {
-                          // ignore: use_build_context_synchronously
-                          Navigator.pop(context);
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 40,
-                        right: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        "Remove Registrations Auth",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                            log.logdata(
+                              username,
+                              '$user - User removed from registrations successfully',
+                            );
+                          } catch (e) {
+                            log.logdata(
+                              username,
+                              '$user - Failed to remove from registrations',
+                            );
+                            setState(() {
+                              error = e.toString();
+                            });
+                          } finally {
+                            setState(() {
+                              error = null;
+                            });
+                            if (mounted) {
+                              // ignore: use_build_context_synchronously
+                              Navigator.pop(context);
+                            }
+                          }
+                        },
+                        child: Container(
+                          width: MediaQuery.of(context).size.width * 0.42,
+                          padding: EdgeInsets.only(
+                            top: 10,
+                            bottom: 10,
+                            left: 40,
+                            right: 40,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "Remove Regs Auth",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                    ),
+                      if (widget.userdata["edit"] == null ||
+                          !widget.userdata['edit']) ...[
+                        TextButton(
+                          onPressed: () async {
+                            final docId = widget.userdata['uid'];
+                            Log log = Log();
+
+                            final userc = FirebaseAuth.instance.currentUser;
+
+                            DocumentSnapshot userDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .get();
+
+                            String user;
+                            String username;
+
+                            if (userDoc.exists &&
+                                userDoc.data() != null &&
+                                userc != null) {
+                              final doc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(userc.uid)
+                                      .get();
+                              username = doc.data()?['username'];
+                              var userData =
+                                  userDoc.data() as Map<String, dynamic>;
+                              user = userData['username'];
+                            } else {
+                              user = "";
+                              username = "";
+                            }
+
+                            try {
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(docId)
+                                  .update({'edit': true});
+
+                              log.logdata(
+                                username,
+                                '$user - User given editing privileges',
+                              );
+                            } catch (e) {
+                              log.logdata(
+                                username,
+                                '$user - Failed to give user editing priviliges',
+                              );
+                              setState(() {
+                                error = e.toString();
+                              });
+                            } finally {
+                              setState(() {
+                                error = null;
+                              });
+                              if (mounted) {
+                                // ignore: use_build_context_synchronously
+                                Navigator.pop(context);
+                              }
+                            }
+                          },
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.42,
+                            padding: EdgeInsets.only(
+                              top: 10,
+                              bottom: 10,
+                              left: 40,
+                              right: 40,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              "Allow Editing",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                      if (widget.userdata['edit'] != null &&
+                          widget.userdata["edit"]) ...[
+                        TextButton(
+                          onPressed: () async {
+                            final docId = widget.userdata['uid'];
+                            Log log = Log();
+
+                            final userc = FirebaseAuth.instance.currentUser;
+
+                            DocumentSnapshot userDoc =
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .get();
+
+                            String user;
+                            String username;
+
+                            if (userDoc.exists &&
+                                userDoc.data() != null &&
+                                userc != null) {
+                              final doc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(userc.uid)
+                                      .get();
+                              username = doc.data()?['username'];
+                              var userData =
+                                  userDoc.data() as Map<String, dynamic>;
+                              user = userData['username'];
+                            } else {
+                              user = "";
+                              username = "";
+                            }
+
+                            try {
+                              await FirebaseFirestore.instance
+                                  .collection('users')
+                                  .doc(docId)
+                                  .update({'edit': false});
+
+                              log.logdata(
+                                username,
+                                '$user - User\'s editing privileges disabled',
+                              );
+                            } catch (e) {
+                              log.logdata(
+                                username,
+                                '$user - Failed to disable user\'s editing priviliges',
+                              );
+                              setState(() {
+                                error = e.toString();
+                              });
+                            } finally {
+                              setState(() {
+                                error = null;
+                              });
+                              if (mounted) {
+                                // ignore: use_build_context_synchronously
+                                Navigator.pop(context);
+                              }
+                            }
+                          },
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 0.42,
+                            padding: EdgeInsets.only(
+                              top: 10,
+                              bottom: 10,
+                              left: 40,
+                              right: 40,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              "Remove Editing",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
                 if (!widget.userdata['regs']) ...[
@@ -1221,7 +1420,9 @@ class _TotalAmountState extends State<TotalAmount> {
                             fontSize: 17,
                           ),
                         ),
-                        subtitle: Text("₹${entry.value.toString()}"),
+                        subtitle: Text(
+                          "₹${entry.value.toStringAsFixed(2).toString()}",
+                        ),
                       );
                     },
                   ),
