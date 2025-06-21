@@ -1,3 +1,4 @@
+import 'package:bills/pages/institutional.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -91,11 +92,30 @@ class _EditDetailsInstiState extends State<EditDetailsInsti> {
       // Finally update the full 'events' field in Firestore
       await docRef.update({'events': events});
 
+      final updatedSnapshot = await docRef.get();
+      final updatedData = updatedSnapshot.data();
+
+      final updatedEvent = updatedData?['events'][widget.eventIndex];
+      final eventName = updatedEvent['name'];
+
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Details updated successfully')));
-      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => ParticipantInfo(
+                currentUser: widget.currentUser,
+                data: updatedEvent,
+                event: eventName.toString().toUpperCase(),
+                uid: "T24N${widget.uid}",
+                eventidx: widget.eventIndex,
+                fullData: updatedData!,
+              ),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,

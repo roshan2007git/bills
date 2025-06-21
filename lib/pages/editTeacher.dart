@@ -1,10 +1,18 @@
+import 'package:bills/pages/institutional.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class EditTeacher extends StatefulWidget {
+  final User currentUser;
   final Map<String, dynamic> data;
   final String uid; // UID of the document (e.g., T25Nxxxx)
-  const EditTeacher({super.key, required this.data, required this.uid});
+  const EditTeacher({
+    super.key,
+    required this.data,
+    required this.uid,
+    required this.currentUser,
+  });
 
   @override
   State<EditTeacher> createState() => _EditTeacherState();
@@ -44,7 +52,16 @@ class _EditTeacherState extends State<EditTeacher> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Teacher details updated successfully")),
       );
-      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => TeamInfo(
+                currentUser: widget.currentUser,
+                uid: "T25N${widget.uid}",
+              ),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
