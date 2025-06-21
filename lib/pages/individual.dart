@@ -1,4 +1,5 @@
 import 'package:bills/backend/refresh.dart';
+import 'package:bills/pages/editIndi.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -130,8 +131,10 @@ class _IndividualState extends State<Individual> {
                               .toLowerCase()
                               .replaceAll('_', ' ')
                               .replaceAll('-', ' ');
+                          final email = data['email'].toString().toLowerCase();
                           return uid.contains(searchQuery) ||
-                              eventName.contains(searchQuery);
+                              eventName.contains(searchQuery) ||
+                              email.contains(searchQuery);
                         }).toList();
 
                     return SizedBox(
@@ -180,11 +183,11 @@ class _IndividualState extends State<Individual> {
                                     },
                                     child: ListTile(
                                       title: Text(
-                                        "T25N$uid",
+                                        "T25N$uid - $name",
                                         style: TextStyle(color: Colors.white),
                                       ),
                                       subtitle: Text(
-                                        name,
+                                        data['email'],
                                         style: TextStyle(color: Colors.white70),
                                       ),
                                     ),
@@ -230,65 +233,92 @@ class _TeamInfoState extends State<TeamInfo> {
     final dob = widget.data['dateOfBirth'] ?? 'N/A';
     final teammates = widget.data['event']['teammates'] ?? [];
 
-    return Scaffold(
-      backgroundColor: Colors.grey[900],
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: Icon(Icons.arrow_back),
-          color: Colors.white,
-        ),
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
         backgroundColor: Colors.grey[900],
-        centerTitle: true,
-        title: Stack(
-          children: [
-            Align(
-              alignment: Alignment.center,
-              child: Text(
-                widget.uid,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          leading: IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (conetext) => Individual(currentUser: widget.currentUser),
                 ),
-              ),
-            ),
-          ],
-        ),
-        elevation: 0,
-        actions: [SizedBox(width: 55)],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: Center(
+              );
+            },
+            icon: Icon(Icons.arrow_back),
+            color: Colors.white,
+          ),
+          backgroundColor: Colors.grey[900],
+          centerTitle: true,
+          title: Stack(
+            children: [
+              Align(
+                alignment: Alignment.center,
                 child: Text(
-                  "Event: ${widget.event.toUpperCase()}",
+                  widget.uid,
                   style: TextStyle(
-                    color: Colors.red,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20,
                   ),
                 ),
               ),
-            ),
-            // Captain Card
-            _buildPersonCard(name, number, email, dob),
-            // Teammates (if any)
-            if (teammates is List && teammates.isNotEmpty)
-              ...teammates.map<Widget>((teammate) {
-                final tName = teammate['name'] ?? 'N/A';
-                final tNumber = teammate['phoneNumber'] ?? 'N/A';
-                final tEmail = teammate['email'] ?? 'N/A';
-                final tDob = teammate['dateOfBirth'] ?? 'N/A';
-                return _buildPersonCard(tName, tNumber, tEmail, tDob);
-              }).toList(),
-          ],
+            ],
+          ),
+          elevation: 0,
+          actions: [SizedBox(width: 55)],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Center(
+                  child: Text(
+                    "Event: ${widget.event.toUpperCase()}",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+              // Captain Card
+              _buildPersonCard(
+                name,
+                number,
+                email,
+                dob,
+                widget.uid.substring(4),
+                null,
+              ),
+              // Teammates (if any)
+              if (teammates is List && teammates.isNotEmpty)
+                ...teammates.asMap().entries.map<Widget>((entry) {
+                  final index = entry.key;
+                  final teammate = entry.value;
+
+                  final tName = teammate['name'] ?? 'N/A';
+                  final tNumber = teammate['phoneNumber'] ?? 'N/A';
+                  final tEmail = teammate['email'] ?? 'N/A';
+                  final tDob = teammate['dateOfBirth'] ?? 'N/A';
+
+                  return _buildPersonCard(
+                    tName,
+                    tNumber,
+                    tEmail,
+                    tDob,
+                    widget.uid.substring(4),
+                    index, // you now have the index!
+                  );
+                }),
+            ],
+          ),
         ),
       ),
     );
@@ -299,22 +329,41 @@ class _TeamInfoState extends State<TeamInfo> {
     String number,
     String email,
     String dob,
+    String uid,
+    int? teamindex,
   ) {
-    return Container(
-      margin: EdgeInsets.all(10),
-      padding: EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Name: $name", style: TextStyle(color: Colors.white)),
-          Text("Phone: $number", style: TextStyle(color: Colors.white)),
-          Text("Email: $email", style: TextStyle(color: Colors.white)),
-          Text("DOB: $dob", style: TextStyle(color: Colors.white)),
-        ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => EditDetailsIndi(
+                  data: widget.data,
+                  currentUser: widget.currentUser,
+                  uid: widget.uid.substring(4),
+                  teammateIndex: teamindex,
+                  eventbackup: widget.event,
+                ),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.all(10),
+        padding: EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Name: $name", style: TextStyle(color: Colors.white)),
+            Text("Phone: $number", style: TextStyle(color: Colors.white)),
+            Text("Email: $email", style: TextStyle(color: Colors.white)),
+            Text("DOB: $dob", style: TextStyle(color: Colors.white)),
+          ],
+        ),
       ),
     );
   }

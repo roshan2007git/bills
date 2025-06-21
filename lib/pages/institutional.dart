@@ -1,4 +1,6 @@
 import 'package:bills/backend/refresh.dart';
+import 'package:bills/pages/editInsti.dart';
+import 'package:bills/pages/editTeacher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -343,17 +345,31 @@ class _TeamInfoState extends State<TeamInfo> {
                         style: TextStyle(color: Colors.white70),
                       ),
                     ),
-                    ListTile(
-                      title: Text(
-                        teacherName,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) => EditTeacher(
+                                  data: widget.data['teacher'],
+                                  uid: widget.uid.substring(4),
+                                ),
+                          ),
+                        );
+                      },
+                      child: ListTile(
+                        title: Text(
+                          teacherName,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      subtitle: Text(
-                        "Teacher Incharge",
-                        style: TextStyle(color: Colors.white70),
+                        subtitle: Text(
+                          "Teacher Incharge",
+                          style: TextStyle(color: Colors.white70),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -417,6 +433,9 @@ class _TeamInfoState extends State<TeamInfo> {
                                           currentUser: widget.currentUser,
                                           data: filteredEvents[index],
                                           event: eventName.toUpperCase(),
+                                          uid: widget.uid,
+                                          eventidx: index,
+                                          fullData: widget.data,
                                         ),
                                   ),
                                 );
@@ -466,11 +485,17 @@ class ParticipantInfo extends StatefulWidget {
   final User currentUser;
   final Map<String, dynamic> data;
   final String event;
+  final String uid;
+  final int eventidx;
+  final Map<String, dynamic> fullData;
   const ParticipantInfo({
     super.key,
     required this.currentUser,
     required this.data,
     required this.event,
+    required this.uid,
+    required this.eventidx,
+    required this.fullData,
   });
 
   @override
@@ -518,12 +543,24 @@ class _ParticipantInfoState extends State<ParticipantInfo> {
           children: [
             // Teammates (if any)
             if (teammates is List && teammates.isNotEmpty)
-              ...teammates.map<Widget>((teammate) {
+              ...teammates.asMap().entries.map<Widget>((entry) {
+                final index = entry.key;
+                final teammate = entry.value;
+
                 final tName = teammate['name'] ?? 'N/A';
                 final tNumber = teammate['phoneNumber'] ?? 'N/A';
                 final tEmail = teammate['email'] ?? 'N/A';
                 final tDob = teammate['dateOfBirth'] ?? 'N/A';
-                return _buildPersonCard(tName, tNumber, tEmail, tDob);
+
+                return _buildPersonCard(
+                  tName,
+                  tNumber,
+                  tEmail,
+                  tDob,
+                  widget.uid,
+                  index,
+                  widget.eventidx,
+                );
               }),
           ],
         ),
@@ -536,22 +573,42 @@ class _ParticipantInfoState extends State<ParticipantInfo> {
     String number,
     String email,
     String dob,
+    String uid,
+    int? teamindex,
+    int eventindex,
   ) {
-    return Container(
-      margin: EdgeInsets.all(10),
-      padding: EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Name: $name", style: TextStyle(color: Colors.white)),
-          Text("Phone: $number", style: TextStyle(color: Colors.white)),
-          Text("Email: $email", style: TextStyle(color: Colors.white)),
-          Text("DOB: $dob", style: TextStyle(color: Colors.white)),
-        ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => EditDetailsInsti(
+                  data: widget.fullData,
+                  currentUser: widget.currentUser,
+                  uid: widget.uid.substring(4),
+                  teammateIndex: teamindex,
+                  eventIndex: eventindex,
+                ),
+          ),
+        );
+      },
+      child: Container(
+        margin: EdgeInsets.all(10),
+        padding: EdgeInsets.all(15),
+        decoration: BoxDecoration(
+          color: Colors.black,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Name: $name", style: TextStyle(color: Colors.white)),
+            Text("Phone: $number", style: TextStyle(color: Colors.white)),
+            Text("Email: $email", style: TextStyle(color: Colors.white)),
+            Text("DOB: $dob", style: TextStyle(color: Colors.white)),
+          ],
+        ),
       ),
     );
   }
