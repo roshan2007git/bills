@@ -1,3 +1,4 @@
+import 'package:bills/pages/registrations.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,16 @@ class _MessagesState extends State<Messages> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: IconButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder:
+                    (context) =>
+                        Registrations(currentUser: widget.currrentUser),
+              ),
+            );
+          },
           icon: const Icon(Icons.arrow_back, color: Colors.white),
         ),
         backgroundColor: Colors.grey[900],
