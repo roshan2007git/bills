@@ -3,6 +3,8 @@ import 'package:bills/backend/reginfo.dart';
 import 'package:bills/pages/directory.dart';
 import 'package:bills/pages/individual.dart';
 import 'package:bills/pages/institutional.dart';
+import 'package:bills/pages/message.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -18,6 +20,8 @@ class _RegistrationsState extends State<Registrations> {
   int total = 0;
   int totalinsti = 0;
   Map<String, int> events = {};
+  String? error;
+  bool permission = false;
 
   RegInfo inf = RegInfo();
 
@@ -27,6 +31,45 @@ class _RegistrationsState extends State<Registrations> {
     loadTotalAmount();
     getEventData();
     loadTotalInsti();
+    getMessage();
+  }
+
+  Future<void> getMessage() async {
+    try {
+      // Get current user's document from Firestore
+      final userDoc =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.currentUser.uid)
+              .get();
+
+      if (!userDoc.exists) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('User document not found')));
+        return;
+      }
+
+      final userData = userDoc.data()!;
+      final message = userData['msg'] == true;
+
+      if (message) {
+        setState(() {
+          permission = true;
+        });
+      } else {
+        setState(() {
+          permission = false;
+        });
+      }
+
+      if (!mounted) return;
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+      });
+    }
   }
 
   Future<void> loadTotalAmount() async {
@@ -82,7 +125,33 @@ class _RegistrationsState extends State<Registrations> {
             ],
           ),
           elevation: 0,
-          actions: [SizedBox(width: 55)],
+          actions: [
+            SizedBox(
+              width: 55,
+              height: 55,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (permission) ...[
+                    IconButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    Messages(currrentUser: widget.currentUser),
+                          ),
+                        );
+                      },
+                      icon: Icon(Icons.message, color: Colors.white, size: 24),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
         ),
         body: GestureDetector(
           onTap: () => FocusManager.instance.primaryFocus?.unfocus(),

@@ -206,6 +206,13 @@ class _AdminPanelState extends State<AdminPanel> {
                                   mainAxisSize: MainAxisSize.min,
                                   spacing: 7,
                                   children: [
+                                    if (user['msg'] != null && user['msg']) ...[
+                                      Icon(
+                                        Icons.messenger,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                    ],
                                     if (user['regs'] == true) ...[
                                       if (user['edit'] != null &&
                                           user['edit']) ...[
@@ -556,6 +563,31 @@ class _UserInfoState extends State<UserInfo> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
+                                "Password: ",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 17,
+                                ),
+                              ),
+                              Flexible(
+                                child: Text(
+                                  widget.userdata['password'],
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                  ),
+                                  overflow: TextOverflow.visible,
+                                  softWrap: true,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
                                 "Email ID: ",
                                 style: TextStyle(
                                   color: Colors.white,
@@ -623,709 +655,914 @@ class _UserInfoState extends State<UserInfo> {
                     ),
                   ),
                 ),
-                if (widget.userdata['regs']) ...[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextButton(
-                        onPressed: () async {
-                          final docId = widget.userdata['uid'];
-                          Log log = Log();
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.34,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        if (widget.userdata['regs']) ...[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              TextButton(
+                                onPressed: () async {
+                                  final docId = widget.userdata['uid'];
+                                  Log log = Log();
 
-                          final userc = FirebaseAuth.instance.currentUser;
+                                  final userc =
+                                      FirebaseAuth.instance.currentUser;
 
-                          DocumentSnapshot userDoc =
-                              await FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(docId)
-                                  .get();
+                                  DocumentSnapshot userDoc =
+                                      await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(docId)
+                                          .get();
 
-                          String user;
-                          String username;
+                                  String user;
+                                  String username;
 
-                          if (userDoc.exists &&
-                              userDoc.data() != null &&
-                              userc != null) {
-                            final doc =
+                                  if (userDoc.exists &&
+                                      userDoc.data() != null &&
+                                      userc != null) {
+                                    final doc =
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(userc.uid)
+                                            .get();
+                                    username = doc.data()?['username'];
+                                    var userData =
+                                        userDoc.data() as Map<String, dynamic>;
+                                    user = userData['username'];
+                                  } else {
+                                    user = "";
+                                    username = "";
+                                  }
+
+                                  try {
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(docId)
+                                        .update({'regs': false});
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(docId)
+                                        .update({'edit': false});
+
+                                    log.logdata(
+                                      username,
+                                      '$user - User removed from registrations successfully',
+                                    );
+                                  } catch (e) {
+                                    log.logdata(
+                                      username,
+                                      '$user - Failed to remove from registrations',
+                                    );
+                                    setState(() {
+                                      error = e.toString();
+                                    });
+                                  } finally {
+                                    setState(() {
+                                      error = null;
+                                    });
+                                    if (mounted) {
+                                      // ignore: use_build_context_synchronously
+                                      Navigator.pop(context);
+                                    }
+                                  }
+                                },
+                                child: Container(
+                                  width:
+                                      MediaQuery.of(context).size.width * 0.42,
+                                  padding: EdgeInsets.only(
+                                    top: 10,
+                                    bottom: 10,
+                                    left: 40,
+                                    right: 40,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    "Remove Regs Auth",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                              if (widget.userdata["edit"] == null ||
+                                  !widget.userdata['edit']) ...[
+                                TextButton(
+                                  onPressed: () async {
+                                    final docId = widget.userdata['uid'];
+                                    Log log = Log();
+
+                                    final userc =
+                                        FirebaseAuth.instance.currentUser;
+
+                                    DocumentSnapshot userDoc =
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(docId)
+                                            .get();
+
+                                    String user;
+                                    String username;
+
+                                    if (userDoc.exists &&
+                                        userDoc.data() != null &&
+                                        userc != null) {
+                                      final doc =
+                                          await FirebaseFirestore.instance
+                                              .collection('users')
+                                              .doc(userc.uid)
+                                              .get();
+                                      username = doc.data()?['username'];
+                                      var userData =
+                                          userDoc.data()
+                                              as Map<String, dynamic>;
+                                      user = userData['username'];
+                                    } else {
+                                      user = "";
+                                      username = "";
+                                    }
+
+                                    try {
+                                      await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(docId)
+                                          .update({'edit': true});
+
+                                      log.logdata(
+                                        username,
+                                        '$user - User given editing privileges',
+                                      );
+                                    } catch (e) {
+                                      log.logdata(
+                                        username,
+                                        '$user - Failed to give user editing priviliges',
+                                      );
+                                      setState(() {
+                                        error = e.toString();
+                                      });
+                                    } finally {
+                                      setState(() {
+                                        error = null;
+                                      });
+                                      if (mounted) {
+                                        // ignore: use_build_context_synchronously
+                                        Navigator.pop(context);
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    width:
+                                        MediaQuery.of(context).size.width *
+                                        0.42,
+                                    padding: EdgeInsets.only(
+                                      top: 10,
+                                      bottom: 10,
+                                      left: 40,
+                                      right: 40,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "Allow Editing",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                              if (widget.userdata['edit'] != null &&
+                                  widget.userdata["edit"]) ...[
+                                TextButton(
+                                  onPressed: () async {
+                                    final docId = widget.userdata['uid'];
+                                    Log log = Log();
+
+                                    final userc =
+                                        FirebaseAuth.instance.currentUser;
+
+                                    DocumentSnapshot userDoc =
+                                        await FirebaseFirestore.instance
+                                            .collection('users')
+                                            .doc(docId)
+                                            .get();
+
+                                    String user;
+                                    String username;
+
+                                    if (userDoc.exists &&
+                                        userDoc.data() != null &&
+                                        userc != null) {
+                                      final doc =
+                                          await FirebaseFirestore.instance
+                                              .collection('users')
+                                              .doc(userc.uid)
+                                              .get();
+                                      username = doc.data()?['username'];
+                                      var userData =
+                                          userDoc.data()
+                                              as Map<String, dynamic>;
+                                      user = userData['username'];
+                                    } else {
+                                      user = "";
+                                      username = "";
+                                    }
+
+                                    try {
+                                      await FirebaseFirestore.instance
+                                          .collection('users')
+                                          .doc(docId)
+                                          .update({'edit': false});
+
+                                      log.logdata(
+                                        username,
+                                        '$user - User\'s editing privileges disabled',
+                                      );
+                                    } catch (e) {
+                                      log.logdata(
+                                        username,
+                                        '$user - Failed to disable user\'s editing priviliges',
+                                      );
+                                      setState(() {
+                                        error = e.toString();
+                                      });
+                                    } finally {
+                                      setState(() {
+                                        error = null;
+                                      });
+                                      if (mounted) {
+                                        // ignore: use_build_context_synchronously
+                                        Navigator.pop(context);
+                                      }
+                                    }
+                                  },
+                                  child: Container(
+                                    width:
+                                        MediaQuery.of(context).size.width *
+                                        0.42,
+                                    padding: EdgeInsets.only(
+                                      top: 10,
+                                      bottom: 10,
+                                      left: 40,
+                                      right: 40,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Text(
+                                      "Remove Editing",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                        if (!widget.userdata['regs']) ...[
+                          TextButton(
+                            onPressed: () async {
+                              final docId = widget.userdata['uid'];
+                              Log log = Log();
+
+                              final userc = FirebaseAuth.instance.currentUser;
+
+                              DocumentSnapshot userDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(docId)
+                                      .get();
+
+                              String user;
+                              String username;
+
+                              if (userDoc.exists &&
+                                  userDoc.data() != null &&
+                                  userc != null) {
+                                final doc =
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(userc.uid)
+                                        .get();
+                                username = doc.data()?['username'];
+                                var userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                user = userData['username'];
+                              } else {
+                                user = "";
+                                username = "";
+                              }
+
+                              try {
                                 await FirebaseFirestore.instance
                                     .collection('users')
-                                    .doc(userc.uid)
-                                    .get();
-                            username = doc.data()?['username'];
-                            var userData =
-                                userDoc.data() as Map<String, dynamic>;
-                            user = userData['username'];
-                          } else {
-                            user = "";
-                            username = "";
-                          }
+                                    .doc(docId)
+                                    .update({'regs': true});
 
-                          try {
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(docId)
-                                .update({'regs': false});
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(docId)
-                                .update({'edit': false});
-
-                            log.logdata(
-                              username,
-                              '$user - User removed from registrations successfully',
-                            );
-                          } catch (e) {
-                            log.logdata(
-                              username,
-                              '$user - Failed to remove from registrations',
-                            );
-                            setState(() {
-                              error = e.toString();
-                            });
-                          } finally {
-                            setState(() {
-                              error = null;
-                            });
-                            if (mounted) {
-                              // ignore: use_build_context_synchronously
-                              Navigator.pop(context);
-                            }
-                          }
-                        },
-                        child: Container(
-                          width: MediaQuery.of(context).size.width * 0.42,
-                          padding: EdgeInsets.only(
-                            top: 10,
-                            bottom: 10,
-                            left: 40,
-                            right: 40,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            "Remove Regs Auth",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                                log.logdata(
+                                  username,
+                                  '$user - User approved for registration data',
+                                );
+                              } catch (e) {
+                                log.logdata(
+                                  username,
+                                  '$user - Registration approval failed',
+                                );
+                                setState(() {
+                                  error = e.toString();
+                                });
+                              } finally {
+                                setState(() {
+                                  error = null;
+                                });
+                                if (mounted) {
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "Approve Registration",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
+                          ),
+                        ],
+                        if (widget.userdata['msg'] == null ||
+                            !widget.userdata["msg"]) ...[
+                          TextButton(
+                            onPressed: () async {
+                              final docId = widget.userdata['uid'];
+                              Log log = Log();
+
+                              final userc = FirebaseAuth.instance.currentUser;
+
+                              DocumentSnapshot userDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(docId)
+                                      .get();
+
+                              String user;
+                              String username;
+
+                              if (userDoc.exists &&
+                                  userDoc.data() != null &&
+                                  userc != null) {
+                                final doc =
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(userc.uid)
+                                        .get();
+                                username = doc.data()?['username'];
+                                var userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                user = userData['username'];
+                              } else {
+                                user = "";
+                                username = "";
+                              }
+
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .update({'msg': true});
+
+                                log.logdata(
+                                  username,
+                                  '$user - User is allowed to view messages',
+                                );
+                              } catch (e) {
+                                log.logdata(
+                                  username,
+                                  '$user - Enabling messages failed',
+                                );
+                                setState(() {
+                                  error = e.toString();
+                                });
+                              } finally {
+                                setState(() {
+                                  error = null;
+                                });
+                                if (mounted) {
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "Allow Messages",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (widget.userdata['msg'] != null &&
+                            widget.userdata["msg"]) ...[
+                          TextButton(
+                            onPressed: () async {
+                              final docId = widget.userdata['uid'];
+                              Log log = Log();
+
+                              final userc = FirebaseAuth.instance.currentUser;
+
+                              DocumentSnapshot userDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(docId)
+                                      .get();
+
+                              String user;
+                              String username;
+
+                              if (userDoc.exists &&
+                                  userDoc.data() != null &&
+                                  userc != null) {
+                                final doc =
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(userc.uid)
+                                        .get();
+                                username = doc.data()?['username'];
+                                var userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                user = userData['username'];
+                              } else {
+                                user = "";
+                                username = "";
+                              }
+
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .update({'msg': false});
+
+                                log.logdata(
+                                  username,
+                                  '$user - User Is not allowed to view messages',
+                                );
+                              } catch (e) {
+                                log.logdata(
+                                  username,
+                                  '$user - Disabling messages failed',
+                                );
+                                setState(() {
+                                  error = e.toString();
+                                });
+                              } finally {
+                                setState(() {
+                                  error = null;
+                                });
+                                if (mounted) {
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "Diable Messages",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (widget.userdata['bills'].isNotEmpty) ...[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => ViewBills(
+                                        bills: widget.userdata['bills'],
+                                        name: widget.userdata['name'],
+                                        folderid: widget.userdata['folderid'],
+                                        uid: widget.userdata['uid'],
+                                        currentUser: widget.currentUser,
+                                      ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "View Bills",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (!widget.userdata['isAdmin']) ...[
+                          TextButton(
+                            onPressed: () async {
+                              final docId = widget.userdata['uid'];
+                              Log log = Log();
+
+                              final userc = FirebaseAuth.instance.currentUser;
+
+                              DocumentSnapshot userDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(docId)
+                                      .get();
+
+                              String user;
+                              String username;
+
+                              if (userDoc.exists &&
+                                  userDoc.data() != null &&
+                                  userc != null) {
+                                final doc =
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(userc.uid)
+                                        .get();
+                                username = doc.data()?['username'];
+                                var userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                user = userData['username'];
+                              } else {
+                                user = "";
+                                username = "";
+                              }
+
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .update({'isAdmin': true});
+
+                                log.logdata(
+                                  username,
+                                  '$user - User made Admin successfully',
+                                );
+                              } catch (e) {
+                                log.logdata(
+                                  username,
+                                  '$user - Enabling Admin failed',
+                                );
+                                setState(() {
+                                  error = e.toString();
+                                });
+                              } finally {
+                                setState(() {
+                                  error = null;
+                                });
+                                if (mounted) {
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "Make Admin",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (widget.userdata['isAdmin']) ...[
+                          TextButton(
+                            onPressed: () async {
+                              final docId = widget.userdata['uid'];
+                              final userc = FirebaseAuth.instance.currentUser;
+                              String uid = userc!.uid;
+                              final data =
+                                  await FirebaseFirestore.instance
+                                      .collection("users")
+                                      .doc(uid)
+                                      .get();
+                              Log log = Log();
+
+                              DocumentSnapshot userDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(docId)
+                                      .get();
+
+                              String user;
+                              String username;
+
+                              if (userDoc.exists && userDoc.data() != null) {
+                                final doc =
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(uid)
+                                        .get();
+                                username = doc.data()?['username'];
+                                var userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                user = userData['username'];
+                              } else {
+                                user = "";
+                                username = "";
+                              }
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .update({'isAdmin': false});
+                                log.logdata(
+                                  username,
+                                  '$user - Removed as Admin successfully',
+                                );
+                              } catch (e) {
+                                log.logdata(
+                                  username,
+                                  '$user - Removal as Admin Failed',
+                                );
+                                setState(() {
+                                  error = e.toString();
+                                });
+                              } finally {
+                                setState(() {
+                                  error = null;
+                                });
+                                if (mounted) {
+                                  if (data['username'] ==
+                                      widget.userdata['username']) {
+                                    Navigator.push(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => Directory(
+                                              currentUser: widget.currentUser,
+                                            ),
+                                      ),
+                                    );
+                                  } else {
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "Remove Admin",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (widget.userdata['isApproved']) ...[
+                          TextButton(
+                            onPressed: () async {
+                              final docId = widget.userdata['uid'];
+                              final userc = FirebaseAuth.instance.currentUser;
+                              String uid = userc!.uid;
+                              final data =
+                                  await FirebaseFirestore.instance
+                                      .collection("users")
+                                      .doc(uid)
+                                      .get();
+                              Log log = Log();
+
+                              DocumentSnapshot userDoc =
+                                  await FirebaseFirestore.instance
+                                      .collection('users')
+                                      .doc(docId)
+                                      .get();
+
+                              String user;
+                              String username;
+
+                              if (userDoc.exists && userDoc.data() != null) {
+                                final doc =
+                                    await FirebaseFirestore.instance
+                                        .collection('users')
+                                        .doc(uid)
+                                        .get();
+                                username = doc.data()?['username'];
+                                var userData =
+                                    userDoc.data() as Map<String, dynamic>;
+                                user = userData['username'];
+                              } else {
+                                user = "";
+                                username = "";
+                              }
+                              try {
+                                await FirebaseFirestore.instance
+                                    .collection('users')
+                                    .doc(docId)
+                                    .update({'isApproved': false});
+                                log.logdata(username, '$user - Disapproved');
+                              } catch (e) {
+                                log.logdata(
+                                  username,
+                                  '$user - Disapproval Failed',
+                                );
+                                setState(() {
+                                  error = e.toString();
+                                });
+                              } finally {
+                                setState(() {
+                                  error = null;
+                                });
+                                if (mounted) {
+                                  if (data['username'] ==
+                                      widget.userdata['username']) {
+                                    Navigator.push(
+                                      // ignore: use_build_context_synchronously
+                                      context,
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => Directory(
+                                              currentUser: widget.currentUser,
+                                            ),
+                                      ),
+                                    );
+                                  } else {
+                                    // ignore: use_build_context_synchronously
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              }
+                            },
+                            child: Container(
+                              width: MediaQuery.of(context).size.width,
+                              padding: EdgeInsets.only(
+                                top: 10,
+                                bottom: 10,
+                                left: 40,
+                                right: 40,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                "Disapprove",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                        ],
+                        TextButton(
+                          onPressed: () {
+                            deleteUser();
+                          },
+                          child: Container(
+                            width: MediaQuery.of(context).size.width,
+                            padding: EdgeInsets.only(
+                              top: 10,
+                              bottom: 10,
+                              left: 40,
+                              right: 40,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(100),
+                            ),
+                            child: Text(
+                              "Delete",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                        if (error != null && showerror == true) ...[
+                          Text(
+                            error!,
+                            style: TextStyle(color: Colors.red, fontSize: 14),
                             textAlign: TextAlign.center,
                           ),
-                        ),
-                      ),
-                      if (widget.userdata["edit"] == null ||
-                          !widget.userdata['edit']) ...[
-                        TextButton(
-                          onPressed: () async {
-                            final docId = widget.userdata['uid'];
-                            Log log = Log();
-
-                            final userc = FirebaseAuth.instance.currentUser;
-
-                            DocumentSnapshot userDoc =
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(docId)
-                                    .get();
-
-                            String user;
-                            String username;
-
-                            if (userDoc.exists &&
-                                userDoc.data() != null &&
-                                userc != null) {
-                              final doc =
-                                  await FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(userc.uid)
-                                      .get();
-                              username = doc.data()?['username'];
-                              var userData =
-                                  userDoc.data() as Map<String, dynamic>;
-                              user = userData['username'];
-                            } else {
-                              user = "";
-                              username = "";
-                            }
-
-                            try {
-                              await FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(docId)
-                                  .update({'edit': true});
-
-                              log.logdata(
-                                username,
-                                '$user - User given editing privileges',
-                              );
-                            } catch (e) {
-                              log.logdata(
-                                username,
-                                '$user - Failed to give user editing priviliges',
-                              );
-                              setState(() {
-                                error = e.toString();
-                              });
-                            } finally {
-                              setState(() {
-                                error = null;
-                              });
-                              if (mounted) {
-                                // ignore: use_build_context_synchronously
-                                Navigator.pop(context);
-                              }
-                            }
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.42,
-                            padding: EdgeInsets.only(
-                              top: 10,
-                              bottom: 10,
-                              left: 40,
-                              right: 40,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              "Allow Editing",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
+                        ],
                       ],
-                      if (widget.userdata['edit'] != null &&
-                          widget.userdata["edit"]) ...[
-                        TextButton(
-                          onPressed: () async {
-                            final docId = widget.userdata['uid'];
-                            Log log = Log();
-
-                            final userc = FirebaseAuth.instance.currentUser;
-
-                            DocumentSnapshot userDoc =
-                                await FirebaseFirestore.instance
-                                    .collection('users')
-                                    .doc(docId)
-                                    .get();
-
-                            String user;
-                            String username;
-
-                            if (userDoc.exists &&
-                                userDoc.data() != null &&
-                                userc != null) {
-                              final doc =
-                                  await FirebaseFirestore.instance
-                                      .collection('users')
-                                      .doc(userc.uid)
-                                      .get();
-                              username = doc.data()?['username'];
-                              var userData =
-                                  userDoc.data() as Map<String, dynamic>;
-                              user = userData['username'];
-                            } else {
-                              user = "";
-                              username = "";
-                            }
-
-                            try {
-                              await FirebaseFirestore.instance
-                                  .collection('users')
-                                  .doc(docId)
-                                  .update({'edit': false});
-
-                              log.logdata(
-                                username,
-                                '$user - User\'s editing privileges disabled',
-                              );
-                            } catch (e) {
-                              log.logdata(
-                                username,
-                                '$user - Failed to disable user\'s editing priviliges',
-                              );
-                              setState(() {
-                                error = e.toString();
-                              });
-                            } finally {
-                              setState(() {
-                                error = null;
-                              });
-                              if (mounted) {
-                                // ignore: use_build_context_synchronously
-                                Navigator.pop(context);
-                              }
-                            }
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.42,
-                            padding: EdgeInsets.only(
-                              top: 10,
-                              bottom: 10,
-                              left: 40,
-                              right: 40,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              "Remove Editing",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-                if (!widget.userdata['regs']) ...[
-                  TextButton(
-                    onPressed: () async {
-                      final docId = widget.userdata['uid'];
-                      Log log = Log();
-
-                      final userc = FirebaseAuth.instance.currentUser;
-
-                      DocumentSnapshot userDoc =
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(docId)
-                              .get();
-
-                      String user;
-                      String username;
-
-                      if (userDoc.exists &&
-                          userDoc.data() != null &&
-                          userc != null) {
-                        final doc =
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(userc.uid)
-                                .get();
-                        username = doc.data()?['username'];
-                        var userData = userDoc.data() as Map<String, dynamic>;
-                        user = userData['username'];
-                      } else {
-                        user = "";
-                        username = "";
-                      }
-
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(docId)
-                            .update({'regs': true});
-
-                        log.logdata(
-                          username,
-                          '$user - User approved for registration data',
-                        );
-                      } catch (e) {
-                        log.logdata(
-                          username,
-                          '$user - Registration approval failed',
-                        );
-                        setState(() {
-                          error = e.toString();
-                        });
-                      } finally {
-                        setState(() {
-                          error = null;
-                        });
-                        if (mounted) {
-                          // ignore: use_build_context_synchronously
-                          Navigator.pop(context);
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 40,
-                        right: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        "Approve Registration",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-                if (widget.userdata['bills'].isNotEmpty) ...[
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder:
-                              (context) => ViewBills(
-                                bills: widget.userdata['bills'],
-                                name: widget.userdata['name'],
-                                folderid: widget.userdata['folderid'],
-                                uid: widget.userdata['uid'],
-                                currentUser: widget.currentUser,
-                              ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 40,
-                        right: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        "View Bills",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-                if (!widget.userdata['isAdmin']) ...[
-                  TextButton(
-                    onPressed: () async {
-                      final docId = widget.userdata['uid'];
-                      Log log = Log();
-
-                      final userc = FirebaseAuth.instance.currentUser;
-
-                      DocumentSnapshot userDoc =
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(docId)
-                              .get();
-
-                      String user;
-                      String username;
-
-                      if (userDoc.exists &&
-                          userDoc.data() != null &&
-                          userc != null) {
-                        final doc =
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(userc.uid)
-                                .get();
-                        username = doc.data()?['username'];
-                        var userData = userDoc.data() as Map<String, dynamic>;
-                        user = userData['username'];
-                      } else {
-                        user = "";
-                        username = "";
-                      }
-
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(docId)
-                            .update({'isAdmin': true});
-
-                        log.logdata(
-                          username,
-                          '$user - User made Admin successfully',
-                        );
-                      } catch (e) {
-                        log.logdata(username, '$user - Enabling Admin failed');
-                        setState(() {
-                          error = e.toString();
-                        });
-                      } finally {
-                        setState(() {
-                          error = null;
-                        });
-                        if (mounted) {
-                          // ignore: use_build_context_synchronously
-                          Navigator.pop(context);
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 40,
-                        right: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        "Make Admin",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-                if (widget.userdata['isAdmin']) ...[
-                  TextButton(
-                    onPressed: () async {
-                      final docId = widget.userdata['uid'];
-                      final userc = FirebaseAuth.instance.currentUser;
-                      String uid = userc!.uid;
-                      final data =
-                          await FirebaseFirestore.instance
-                              .collection("users")
-                              .doc(uid)
-                              .get();
-                      Log log = Log();
-
-                      DocumentSnapshot userDoc =
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(docId)
-                              .get();
-
-                      String user;
-                      String username;
-
-                      if (userDoc.exists && userDoc.data() != null) {
-                        final doc =
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(uid)
-                                .get();
-                        username = doc.data()?['username'];
-                        var userData = userDoc.data() as Map<String, dynamic>;
-                        user = userData['username'];
-                      } else {
-                        user = "";
-                        username = "";
-                      }
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(docId)
-                            .update({'isAdmin': false});
-                        log.logdata(
-                          username,
-                          '$user - Removed as Admin successfully',
-                        );
-                      } catch (e) {
-                        log.logdata(
-                          username,
-                          '$user - Removal as Admin Failed',
-                        );
-                        setState(() {
-                          error = e.toString();
-                        });
-                      } finally {
-                        setState(() {
-                          error = null;
-                        });
-                        if (mounted) {
-                          if (data['username'] == widget.userdata['username']) {
-                            Navigator.push(
-                              // ignore: use_build_context_synchronously
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => Directory(
-                                      currentUser: widget.currentUser,
-                                    ),
-                              ),
-                            );
-                          } else {
-                            // ignore: use_build_context_synchronously
-                            Navigator.pop(context);
-                          }
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 40,
-                        right: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        "Remove Admin",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-                if (widget.userdata['isApproved']) ...[
-                  TextButton(
-                    onPressed: () async {
-                      final docId = widget.userdata['uid'];
-                      final userc = FirebaseAuth.instance.currentUser;
-                      String uid = userc!.uid;
-                      final data =
-                          await FirebaseFirestore.instance
-                              .collection("users")
-                              .doc(uid)
-                              .get();
-                      Log log = Log();
-
-                      DocumentSnapshot userDoc =
-                          await FirebaseFirestore.instance
-                              .collection('users')
-                              .doc(docId)
-                              .get();
-
-                      String user;
-                      String username;
-
-                      if (userDoc.exists && userDoc.data() != null) {
-                        final doc =
-                            await FirebaseFirestore.instance
-                                .collection('users')
-                                .doc(uid)
-                                .get();
-                        username = doc.data()?['username'];
-                        var userData = userDoc.data() as Map<String, dynamic>;
-                        user = userData['username'];
-                      } else {
-                        user = "";
-                        username = "";
-                      }
-                      try {
-                        await FirebaseFirestore.instance
-                            .collection('users')
-                            .doc(docId)
-                            .update({'isApproved': false});
-                        log.logdata(username, '$user - Disapproved');
-                      } catch (e) {
-                        log.logdata(username, '$user - Disapproval Failed');
-                        setState(() {
-                          error = e.toString();
-                        });
-                      } finally {
-                        setState(() {
-                          error = null;
-                        });
-                        if (mounted) {
-                          if (data['username'] == widget.userdata['username']) {
-                            Navigator.push(
-                              // ignore: use_build_context_synchronously
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => Directory(
-                                      currentUser: widget.currentUser,
-                                    ),
-                              ),
-                            );
-                          } else {
-                            // ignore: use_build_context_synchronously
-                            Navigator.pop(context);
-                          }
-                        }
-                      }
-                    },
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      padding: EdgeInsets.only(
-                        top: 10,
-                        bottom: 10,
-                        left: 40,
-                        right: 40,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Text(
-                        "Disapprove",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-                TextButton(
-                  onPressed: () {
-                    deleteUser();
-                  },
-                  child: Container(
-                    width: MediaQuery.of(context).size.width,
-                    padding: EdgeInsets.only(
-                      top: 10,
-                      bottom: 10,
-                      left: 40,
-                      right: 40,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Text(
-                      "Delete",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),
-                if (error != null && showerror == true) ...[
-                  Text(
-                    error!,
-                    style: TextStyle(color: Colors.red, fontSize: 14),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
               ],
             ),
           ),
@@ -1606,12 +1843,14 @@ class _ViewBillsState extends State<ViewBills> {
         showerror = true;
       });
     } finally {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AdminPanel(currentUser: widget.currentUser),
-        ),
-      );
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AdminPanel(currentUser: widget.currentUser),
+          ),
+        );
+      }
     }
   }
 
@@ -1769,11 +2008,13 @@ class _LogsState extends State<Logs> {
       body: FutureBuilder<QuerySnapshot>(
         future: FirebaseFirestore.instance.collection('logs').get(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting)
+          if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
+          }
 
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(child: Text('No logs found'));
+          }
 
           // Sort by document ID parsed as DateTime in descending order
           final logs =
