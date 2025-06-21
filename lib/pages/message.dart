@@ -164,40 +164,45 @@ class MessageDetailPage extends StatelessWidget {
     final message = data['message'] ?? 'No Message';
     final timestamp = data['timestamp'] ?? 'No Timestamp';
 
-    return Scaffold(
-      backgroundColor: Colors.grey[900],
-      appBar: AppBar(
+    return GestureDetector(
+      onTap: () {
+        FocusManager.instance.primaryFocus?.unfocus();
+      },
+      child: Scaffold(
         backgroundColor: Colors.grey[900],
-        leading: IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
+        appBar: AppBar(
+          backgroundColor: Colors.grey[900],
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+          ),
+          centerTitle: true,
+          title: const Text(
+            "Message Details",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          elevation: 0,
         ),
-        centerTitle: true,
-        title: const Text(
-          "Message Details",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              buildDetail("Name", name),
-              buildDetail("Email", email),
-              buildDetail("Phone Number", number),
-              buildDetail("Message", message),
-              buildDetail("Timestamp", timestamp),
-            ],
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                buildDetail("Name", name),
+                buildDetail("Email", email, selectable: true),
+                buildDetail("Phone Number", number, selectable: true),
+                buildDetail("Message", message),
+                buildDetail("Timestamp", timestamp),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget buildDetail(String title, String value) {
+  Widget buildDetail(String title, String value, {bool selectable = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 15.0),
       child: Column(
@@ -212,10 +217,15 @@ class MessageDetailPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 5),
-          Text(
-            value,
-            style: const TextStyle(color: Colors.white70, fontSize: 15),
-          ),
+          selectable
+              ? SelectableText(
+                value,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+              )
+              : Text(
+                value,
+                style: const TextStyle(color: Colors.white, fontSize: 15),
+              ),
         ],
       ),
     );

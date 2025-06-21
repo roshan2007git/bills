@@ -356,19 +356,9 @@ class _TeamInfoState extends State<TeamInfo> {
           ),
           backgroundColor: Colors.grey[900],
           centerTitle: true,
-          title: Stack(
-            children: [
-              Align(
-                alignment: Alignment.center,
-                child: Text(
-                  widget.uid,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+          title: Text(
+            widget.uid,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
           elevation: 0,
           actions: [
