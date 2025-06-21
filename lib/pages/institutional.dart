@@ -18,10 +18,12 @@ class _InstitutionalState extends State<Institutional> {
   TextEditingController searchController = TextEditingController();
   FocusNode searchFocusNode = FocusNode();
   String searchQuery = '';
+  bool permission = false;
 
   @override
   void initState() {
     super.initState();
+    checkEdit();
   }
 
   @override
@@ -29,6 +31,31 @@ class _InstitutionalState extends State<Institutional> {
     searchController.dispose();
     searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> checkEdit() async {
+    try {
+      final user =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.currentUser.uid)
+              .get();
+      final data = user.data() as Map<String, dynamic>;
+      final isEditable = data['edit'] == true;
+      if (isEditable) {
+        setState(() {
+          permission = true;
+        });
+      } else {
+        setState(() {
+          permission = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        permission = false;
+      });
+    }
   }
 
   @override
@@ -202,43 +229,45 @@ class _InstitutionalState extends State<Institutional> {
                                           child: Row(
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
-                                              if (data['present'] != null &&
-                                                  data['present']) ...[
-                                                Text(
-                                                  "Present",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ],
-                                              if (data['present'] == null ||
-                                                  !data['present']) ...[
-                                                GestureDetector(
-                                                  onTap: () async {
-                                                    // Set present to true
-                                                    await FirebaseFirestore
-                                                        .instance
-                                                        .collection(
-                                                          'instiRegistrations',
-                                                        )
-                                                        .doc(doc.id)
-                                                        .update({
-                                                          'present': true,
-                                                        });
-                                                  },
-                                                  child: Container(
-                                                    height: 34,
-                                                    width: 34,
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.black,
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
+                                              if (permission) ...[
+                                                if (data['present'] != null &&
+                                                    data['present']) ...[
+                                                  Text(
+                                                    "Present",
+                                                    style: TextStyle(
+                                                      color: Colors.white,
                                                     ),
-                                                    child: Icon(Icons.check),
                                                   ),
-                                                ),
+                                                ],
+                                                if (data['present'] == null ||
+                                                    !data['present']) ...[
+                                                  GestureDetector(
+                                                    onTap: () async {
+                                                      // Set present to true
+                                                      await FirebaseFirestore
+                                                          .instance
+                                                          .collection(
+                                                            'instiRegistrations',
+                                                          )
+                                                          .doc(doc.id)
+                                                          .update({
+                                                            'present': true,
+                                                          });
+                                                    },
+                                                    child: Container(
+                                                      height: 34,
+                                                      width: 34,
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black,
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              10,
+                                                            ),
+                                                      ),
+                                                      child: Icon(Icons.check),
+                                                    ),
+                                                  ),
+                                                ],
                                               ],
                                             ],
                                           ),
@@ -273,6 +302,7 @@ class _TeamInfoState extends State<TeamInfo> {
   TextEditingController searchController = TextEditingController();
   FocusNode searchFocusNode = FocusNode();
   String searchQuery = '';
+  String? error;
   List<Widget> _buildKeyValueTiles(Map<String, dynamic>? data) {
     if (data == null) {
       return [Text("No data found", style: TextStyle(color: Colors.white70))];
@@ -293,6 +323,8 @@ class _TeamInfoState extends State<TeamInfo> {
     }).toList();
   }
 
+  bool permission = false;
+
   late Future<DocumentSnapshot<Map<String, dynamic>>> _future;
   @override
   void initState() {
@@ -302,6 +334,7 @@ class _TeamInfoState extends State<TeamInfo> {
             .collection('instiRegistrations')
             .doc(widget.uid.substring(4)) // remove T25N prefix
             .get();
+    checkEdit();
   }
 
   @override
@@ -309,6 +342,31 @@ class _TeamInfoState extends State<TeamInfo> {
     searchController.dispose();
     searchFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> checkEdit() async {
+    try {
+      final user =
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.currentUser.uid)
+              .get();
+      final data = user.data() as Map<String, dynamic>;
+      final isEditable = data['edit'] == true;
+      if (isEditable) {
+        setState(() {
+          permission = true;
+        });
+      } else {
+        setState(() {
+          permission = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        permission = false;
+      });
+    }
   }
 
   @override
@@ -373,34 +431,36 @@ class _TeamInfoState extends State<TeamInfo> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (data['present'] != null && data['present']) ...[
-                        TextButton(
-                          onPressed: () async {
-                            // Set present to false
-                            await FirebaseFirestore.instance
-                                .collection('instiRegistrations')
-                                .doc(widget.uid.substring(4))
-                                .update({'present': false});
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder:
-                                    (context) => Institutional(
-                                      currentUser: widget.currentUser,
-                                    ),
+                      if (permission) ...[
+                        if (data['present'] != null && data['present']) ...[
+                          TextButton(
+                            onPressed: () async {
+                              // Set present to false
+                              await FirebaseFirestore.instance
+                                  .collection('instiRegistrations')
+                                  .doc(widget.uid.substring(4))
+                                  .update({'present': false});
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) => Institutional(
+                                        currentUser: widget.currentUser,
+                                      ),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              height: 34,
+                              width: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            );
-                          },
-                          child: Container(
-                            height: 34,
-                            width: 34,
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(10),
+                              child: Icon(Icons.close, color: Colors.white),
                             ),
-                            child: Icon(Icons.close, color: Colors.white),
                           ),
-                        ),
+                        ],
                       ],
                     ],
                   ),
