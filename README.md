@@ -1,6 +1,8 @@
-# bills
+App for Transcendence 2025
+a dedicated app to store all the bills of the users
+has some cool features like user login, otp, etc.
 
-A new Flutter project.
+------------------------------------
 
 ## Getting Started
 
