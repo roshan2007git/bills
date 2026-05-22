@@ -1,6 +1,7 @@
-App for Transcendence 2025
-a dedicated app to store all the bills of the users
-has some cool features like user login, otp, etc.
+Transcendence 2025 app
+
+- a dedicated app to store all the bills of the users.
+- has some cool features like user login, otp, etc.
 
 ------------------------------------
 
